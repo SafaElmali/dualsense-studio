@@ -8,7 +8,6 @@ diagnostics: { opened: [], connected: [], measurement_started: [], measurement_c
 target_practice: { started: ['mode'], completed: ['score', 'hits', 'shots', 'weapons'] },
 touchpad: { enabled: [], disabled: [] },
 gyro: { enabled: [], disabled: [], recentered: [] },
-drift_compensation: { applied: [], adjusted: [], removed: [] },
 leaderboard: { opened: [], submitted: ['score'] },
 scorecard: { exported: ['score', 'hits', 'shots', 'weapons'], export_failed: [] }
 };
