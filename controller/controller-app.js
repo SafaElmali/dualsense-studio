@@ -1,5 +1,7 @@
 import { AdaptiveTriggers } from './adaptive-triggers.js';
-import { analytics } from './analytics.js';
+import { SupportView } from './support-view.js';
+import { patreonUrl } from './support-config.js';
+import { analytics } from './analytics.js?v=support-1';
 import { ControllerInput } from './input-state.js';
 import { InputCamera } from './input-camera.js';
 import { GyroInput } from './gyro-input.js';
@@ -14,6 +16,7 @@ import { LeaderboardClient, LeaderboardView } from './leaderboard.js';
 import { TargetPracticeView } from './target-practice-view.js';
 
 const $ = id => document.getElementById(id);
+new SupportView(document.querySelector('[data-support]'), { url: patreonUrl, onOpen: () => analytics.featureAction('support', 'clicked', { surface: 'studio', provider: 'patreon' }) });
 const canvas = $('controller-canvas');
 const help = $('help');
 const labels = { triangle:'Triangle', circle:'Circle', cross:'Cross', square:'Square', up:'D-pad up', down:'D-pad down', left:'D-pad left', right:'D-pad right', l1:'L1', r1:'R1', l2:'L2', r2:'R2', l3:'L3', r3:'R3', ps:'Home', mute:'Microphone mute', touchpad:'Touchpad', create:'Create', options:'Options' };

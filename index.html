@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="./controller/leaderboard.css">
   <link rel="stylesheet" href="./controller/battery.css">
   <link rel="stylesheet" href="./controller/appearance.css">
+  <link rel="stylesheet" href="./controller/support.css?v=support-1">
   <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
 </head>
 <body>
@@ -129,6 +130,13 @@
       </div>
     </section>
   </section>
+  <section class="studio-support" data-support hidden aria-labelledby="support-title">
+    <div class="studio-support-copy">
+      <span class="studio-support-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>
+      <div><h2 id="support-title">Help keep the studio growing.</h2><p>Enjoying DualSense Studio? Support independent development and the next round of controller experiments.</p></div>
+    </div>
+    <div class="studio-support-action"><a data-support-link target="_blank" rel="noopener noreferrer">Support on Patreon <span aria-hidden="true">↗</span></a><small>Optional support. Free to keep playing.</small></div>
+  </section>
   <footer><span>Independent recreation · Not affiliated with Sony</span><span class="model-credit">3D model by <a href="https://sketchfab.com/3d-models/ps5-controller-b7bb9c5102a04cb0b1966c6d02bad7d6" target="_blank" rel="noopener noreferrer">Taohid Animation</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · Adapted for interaction</span></footer>
   <output class="sr-only" id="announcement" aria-live="polite"></output>
 </main>
@@ -218,6 +226,6 @@
   <div class="leaderboard-footer"><div id="leaderboard-personal" class="leaderboard-personal"></div><button id="leaderboard-refresh" class="leaderboard-button" aria-label="Refresh scores"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m10-3a7 7 0 0 0-12-3L4 9m1 6a7 7 0 0 0 12 3l3-3"/></svg><span>Refresh</span></button></div>
   <p id="leaderboard-status" class="leaderboard-announcement" role="status"></p>
 </dialog>
-<script type="module" src="./controller/controller-app.js"></script>
+<script type="module" src="./controller/controller-app.js?v=support-1"></script>
 </body>
 </html>

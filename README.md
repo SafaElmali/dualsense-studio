@@ -67,6 +67,12 @@ Three.js is distributed under its included [MIT license](controller/vendor/three
 
 This is an independent visual recreation, not an official Sony product or a verified dimensional CAD model. PlayStation and DualSense are trademarks of Sony Interactive Entertainment.
 
+## Optional project support
+
+The main page includes a Patreon support section. Set `patreonUrl` in `controller/support-config.js` to the published creator page URL. The section stays hidden until a valid HTTPS Patreon creator URL is configured. Membership checkout and billing happen on Patreon, and existing app features remain free.
+
+`controller_support_clicked` records an outgoing support click with `provider=patreon` and `surface=studio`. It also counts `support` in feature reach. This is a link-click count, not a donation or membership conversion. Neither payment details nor the destination URL are included in custom event properties. Normal local-development, Do Not Track, and analytics-blocking behavior still apply.
+
 ## Analytics
 
 [Open the Visitors & Usage dashboard](https://us.posthog.com/project/594399/dashboard/2066186). It shows production traffic over the last 30 days; development test events are excluded.
