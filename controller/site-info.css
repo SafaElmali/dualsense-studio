@@ -1,0 +1,22 @@
+.skip-link{position:absolute;top:12px;left:20px;z-index:20;transform:translateY(-160%);padding:10px 16px;border-radius:8px;background:#dce7ff;color:#111827}
+.skip-link:focus{transform:translateY(0)}
+.site-noscript{border:1px solid #61718d;border-radius:10px;padding:16px;color:#c4cfdf}
+.site-info{margin:32px 0 36px;padding-top:40px;border-top:1px solid var(--line);scroll-margin-top:24px}
+.site-info-intro{max-width:690px;margin-bottom:30px}
+.site-eyebrow{font:10px/1.5 ui-monospace,SFMono-Regular,monospace;letter-spacing:.16em;color:#9badd0;margin:0 0 12px}
+.site-info h2{font-size:clamp(24px,3vw,34px);line-height:1.15;letter-spacing:-1px;font-weight:500;margin:0 0 16px}
+.site-info p:not(.site-eyebrow){font-size:14px;line-height:1.8;color:#aeb7c6;margin:0}
+.site-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.site-feature-grid article{position:relative;padding:26px;border:1px solid #ffffff12;border-radius:14px;background:#ffffff02}
+.site-feature-number{font:11px ui-monospace,SFMono-Regular,monospace;color:#a8bcdf;display:block;margin-bottom:18px}
+.site-feature-grid h3{font-size:17px;line-height:1.4;font-weight:500;letter-spacing:-.25px;margin:0 0 10px}
+.site-faq{display:grid;grid-template-columns:1fr 1.5fr;gap:40px;margin-top:48px;padding-top:36px;border-top:1px solid var(--line)}
+.site-faq details{border-bottom:1px solid var(--line);padding:17px 0}
+.site-faq details:first-child{padding-top:0}
+.site-faq summary{cursor:pointer;position:relative;list-style:none;padding-right:32px;font-size:14px;color:#d7dfec}
+.site-faq summary::-webkit-details-marker{display:none}
+.site-faq summary::after{content:'+';position:absolute;right:3px;top:-3px;font-size:20px;font-weight:300;color:#a8bcdf}
+.site-faq details[open] summary::after{content:'−'}
+.site-faq summary:focus-visible{outline:2px solid var(--blue);outline-offset:5px;border-radius:3px}
+.site-faq .site-faq-answers p{padding:12px 24px 0 0;font-size:13px}
+@media(max-width:650px){.site-info{margin-top:20px;padding-top:28px}.site-feature-grid{grid-template-columns:1fr}.site-feature-grid article{padding:22px}.site-faq{grid-template-columns:1fr;gap:14px;margin-top:30px;padding-top:28px}.site-info p:not(.site-eyebrow){font-size:13px}}

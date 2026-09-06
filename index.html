@@ -4,19 +4,42 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111215">
-  <meta name="description" content="A tactile, interactive DualSense controller. Press the buttons, move the sticks, and make it yours.">
-  <title>DualSense — Interactive controller</title>
+  <meta name="description" content="Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.">
+  <title>DualSense Studio — PS5 Controller Tester &amp; Playground</title>
+  <link rel="canonical" href="https://dualsense.studio/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DualSense Studio">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="DualSense Studio — PS5 Controller Tester &amp; Playground">
+  <meta property="og:description" content="Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.">
+  <meta property="og:url" content="https://dualsense.studio/">
+  <meta property="og:image" content="https://dualsense.studio/assets/dualsense-studio-social.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="DualSense Studio — an interactive PS5 controller playground at dualsense.studio">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DualSense Studio — PS5 Controller Tester &amp; Playground">
+  <meta name="twitter:description" content="Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.">
+  <meta name="twitter:image" content="https://dualsense.studio/assets/dualsense-studio-social.png">
+  <meta name="twitter:image:alt" content="DualSense Studio — an interactive PS5 controller playground at dualsense.studio">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon-48.png">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://dualsense.studio/#website","url":"https://dualsense.studio/","name":"DualSense Studio","alternateName":"dualsense.studio","inLanguage":"en"},{"@type":"WebPage","@id":"https://dualsense.studio/#webpage","url":"https://dualsense.studio/","name":"DualSense Studio — PS5 Controller Tester & Playground","description":"Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.","inLanguage":"en","isPartOf":{"@id":"https://dualsense.studio/#website"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://dualsense.studio/assets/dualsense-studio-social.png","width":1200,"height":630},"mainEntity":{"@id":"https://dualsense.studio/#app"}},{"@type":"WebApplication","@id":"https://dualsense.studio/#app","url":"https://dualsense.studio/","name":"DualSense Studio","description":"Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.","applicationCategory":"EntertainmentApplication","operatingSystem":"Web browser","browserRequirements":"JavaScript and WebGL. Advanced controller features require desktop Chrome or Edge and controller access."}]}</script>
   <link rel="icon" type="image/svg+xml" href="./controller/favicon.svg">
   <link rel="stylesheet" href="./controller/controller.css">
-<link rel="stylesheet" href="./controller/range.css">
+  <link rel="stylesheet" href="./controller/site-info.css">
+  <link rel="stylesheet" href="./controller/range.css">
   <link rel="stylesheet" href="./controller/leaderboard.css">
   <link rel="stylesheet" href="./controller/battery.css">
   <link rel="stylesheet" href="./controller/appearance.css">
   <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
 </head>
 <body>
+<a class="skip-link" href="#about">Skip to features and help</a>
 <main>
-  <header><div class="brand"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 58 20"><path d="M1 17 9 3l8 14Z"/><circle cx="29" cy="10" r="7"/><path d="m43 3 14 14M57 3 43 17"/></svg></span>PlayStation<span class="edition">/ CONTROLLER STUDIO</span></div><div class="header-actions"><span class="mode"><i></i><span id="mode-label">Virtual controller</span></span><div class="battery-tool" id="battery-tool">
+  <header><div class="brand"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 58 20"><path d="M1 17 9 3l8 14Z"/><circle cx="29" cy="10" r="7"/><path d="m43 3 14 14M57 3 43 17"/></svg></span>DualSense Studio<span class="edition">/ CONTROLLER PLAYGROUND</span></div><div class="header-actions"><span class="mode"><i></i><span id="mode-label">Virtual controller</span></span><div class="battery-tool" id="battery-tool">
       <button class="battery-indicator" id="battery-connect" type="button" aria-label="Connect controller for battery status" aria-describedby="battery-tooltip">
         <span class="battery-connection" aria-hidden="true"><svg class="battery-usb" viewBox="0 0 24 24"><path d="M12 20V4m0 0-3 3m3-3 3 3M12 16l-5-4V9m5 4 5-4V6"/><circle cx="12" cy="20" r="1.5"/><circle cx="7" cy="8" r="1.3"/><path d="M15.5 3.5h3v3h-3z"/></svg><svg class="battery-bluetooth" viewBox="0 0 24 24"><path d="m7 7 10 10-5 4V3l5 4L7 17"/></svg></span>
         <span class="battery-percent">—%</span>
@@ -25,7 +48,8 @@
       </button>
       <span class="battery-tooltip" id="battery-tooltip" role="tooltip">Connect your DualSense to read its battery.</span>
     </div><button class="icon-button" id="sound" aria-label="Enable button sounds" aria-pressed="false" title="Button sounds"><svg viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4Z"/><path id="sound-lines" d="m16 9 5 6m0-6-5 6"/></svg></button></div></header>
-  <section class="intro"><div><h1>DualSense.</h1><p>PS5 wireless controller. Every angle, in your hands.</p><button class="range-launch" id="open-range">◎ &nbsp; Play target practice <span>NEW</span></button></div><div class="model"><span>WIRELESS CONTROLLER</span>CFI–ZCT1W / 01</div></section>
+  <section class="intro"><div><h1>DualSense Studio.</h1><p>Interactive PS5 controller tester. Every input, in view.</p><button class="range-launch" id="open-range">◎ &nbsp; Play target practice <span>NEW</span></button></div><div class="model"><span>WIRELESS CONTROLLER</span>CFI–ZCT1W / 01</div></section>
+  <noscript><p class="site-noscript">Enable JavaScript to use the 3D controller and input tools. You can still read the features and connection help below.</p></noscript>
   <section class="stage" aria-label="Interactive 3D DualSense controller">
     <div class="view-switch" aria-label="Camera angle"><button id="auto-view" aria-pressed="true" disabled title="Follow the controls you use">Auto</button><button data-view="front" aria-pressed="false" disabled>Front</button><button data-view="angle" aria-pressed="false" disabled>Angle</button><button data-view="back" aria-pressed="false" disabled>Back</button></div>
     <div class="viewer" id="viewer" aria-busy="true">
@@ -84,6 +108,26 @@
   <section class="studio-tools" aria-label="Controller tools">
     <button id="open-drawing"><span class="tool-symbol" aria-hidden="true">✧</span><span><strong>Touchpad drawing</strong><small>Paint with light. Save your creation.</small></span><span aria-hidden="true">↗</span></button>
     <button id="open-diagnostics"><span class="tool-symbol" aria-hidden="true">◎</span><span><strong>Controller diagnostics</strong><small>Check sticks, triggers, and every button.</small></span><span aria-hidden="true">↗</span></button>
+  </section>
+  <section class="site-info" id="about" aria-labelledby="about-title">
+    <div class="site-info-intro"><p class="site-eyebrow">EXPLORE YOUR CONTROLLER</p><h2 id="about-title">More than a button check.</h2><p>DualSense Studio is an interactive PS5 controller tester and playground in your browser. Explore the 3D model, or connect your DualSense over USB or Bluetooth to see your real inputs come to life.</p></div>
+    <div class="site-feature-grid">
+      <article><span class="site-feature-number" aria-hidden="true">01</span><h3>Check stick drift, buttons &amp; triggers</h3><p>Open Controller diagnostics, release both sticks, and measure their resting positions for two seconds. Inspect the input your browser receives, test L2 and R2 pressure, and check button presses. This helps you spot drift; it does not repair or recalibrate hardware.</p></article>
+      <article><span class="site-feature-number" aria-hidden="true">02</span><h3>Practice your aim</h3><p>Play a 20-second target practice round. Aim with your mouse or a connected controller, choose a weapon, and track your accuracy. Connect a DualSense to try gyro aiming. Submit your score to compare your best round on the leaderboard.</p></article>
+      <article><span class="site-feature-number" aria-hidden="true">03</span><h3>Turn your touchpad into a canvas</h3><p>Slide a finger across your connected DualSense touchpad to draw glowing trails, choose a color, and save your creation as an image. Touchpad tracking can follow your fingers without pressing the pad.</p></article>
+      <article><span class="site-feature-number" aria-hidden="true">04</span><h3>Feel it. Move it. Make it yours.</h3><p>Try adaptive trigger effects, customize a preset and share its link. Use gyro motion to rotate the 3D controller, change the virtual shell color, or sync the light around your physical controller’s touchpad.</p></article>
+    </div>
+    <section class="site-faq" id="controller-help" aria-labelledby="faq-title">
+      <div><p class="site-eyebrow">BEFORE YOU PLAY</p><h2 id="faq-title">A little connection help.</h2></div>
+      <div class="site-faq-answers">
+        <details><summary>How do I connect my PS5 controller?</summary><p>Plug your DualSense into your computer with a USB data cable, or pair it using your computer’s Bluetooth settings. Open DualSense Studio and press a controller button. For gyro, touchpad tracking, battery readings, lights, and adaptive triggers, use desktop Chrome or Edge and select your controller when the browser asks for access.</p></details>
+        <details><summary>Does this fix stick drift?</summary><p>No. Controller diagnostics shows stick movement and measures the resting offset reported by your browser, without adding a deadzone. It can help you check for drift, but it cannot repair worn components or change how your controller behaves on a PS5 or in other games.</p></details>
+        <details><summary>Why do buttons work but battery or gyro needs permission?</summary><p>Basic buttons and sticks can work through the browser’s gamepad support. Battery status, gyro and other DualSense features need separate device access. Click the relevant feature and select your controller to grant that access. Permissions are specific to the browser and website you use.</p></details>
+        <details><summary>Can I try it without a controller?</summary><p>Yes. Rotate the virtual controller, click its buttons, drag its sticks, and change its appearance. Open Controls for keyboard shortcuts. You can also try target practice with your mouse. Physical features such as adaptive triggers and gyro require a DualSense.</p></details>
+        <details><summary>Does it work on mobile or every browser?</summary><p>You can explore the 3D model in a browser with JavaScript and WebGL support. Physical controller support varies by device and browser. Desktop Chrome or Edge is recommended for the full set of DualSense features; a USB data cable is the simplest way to start.</p></details>
+        <details><summary>Is DualSense Studio an official PlayStation tool?</summary><p>No. DualSense Studio is an independent project and is not affiliated with or endorsed by Sony or PlayStation. The 3D model is credited below.</p></details>
+      </div>
+    </section>
   </section>
   <footer><span>Independent recreation · Not affiliated with Sony</span><span class="model-credit">3D model by <a href="https://sketchfab.com/3d-models/ps5-controller-b7bb9c5102a04cb0b1966c6d02bad7d6" target="_blank" rel="noopener noreferrer">Taohid Animation</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · Adapted for interaction</span></footer>
   <output class="sr-only" id="announcement" aria-live="polite"></output>

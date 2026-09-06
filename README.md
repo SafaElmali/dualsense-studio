@@ -218,3 +218,9 @@ PostHog counts `controller_gyro_enabled`, `controller_gyro_disabled`, and `contr
 Target practice uses a dedicated arena layout with a compact HUD, remaining-time bar, weapon loadout, and an expandable controller setup panel. The locally drawn firing bay includes illuminated hanging targets, impact particles, hit markers, and recoil feedback in the reticle. The arena keeps a fixed coordinate system inside a fitted viewport so mouse/touch aim stays aligned at different screen sizes. Reduced-motion preference removes decorative particles, tracers, and reticle recoil. The 20-second round, score rules, and existing leaderboard records are unchanged.
 
 Completed rounds show score, hits/accuracy, optional name submission, replay, and scorecard download in a centered arena card. The name field receives focus when play ends with focus on the canvas; typing names does not trigger game keyboard shortcuts. The leaderboard is launched from inside the game only. Offline/practice-only rounds explain why submission is unavailable while replay and scorecard exports still work.
+
+
+## SEO
+
+The canonical public origin is `https://dualsense.studio`. Search metadata and JSON-LD live in the homepage HTML so crawlers do not need the 3D renderer. The build includes `robots.txt`, `sitemap.xml`, a branded `404.html`, PNG icons, and the social preview in `assets/`. Trigger preset URLs retain their settings while canonicalizing to the homepage.
+
