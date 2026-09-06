@@ -6,6 +6,10 @@
   <meta name="theme-color" content="#111215">
   <meta name="description" content="Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.">
   <title>DualSense Studio — PS5 Controller Tester &amp; Playground</title>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico?v=ds-logo-1">
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png?v=ds-logo-1">
+  <link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon-48.png?v=ds-logo-1">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png?v=ds-logo-1">
   <link rel="canonical" href="https://dualsense.studio/">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta property="og:type" content="website">
@@ -24,15 +28,12 @@
   <meta name="twitter:description" content="Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.">
   <meta name="twitter:image" content="https://dualsense.studio/assets/dualsense-studio-social.png">
   <meta name="twitter:image:alt" content="DualSense Studio — an interactive PS5 controller playground at dualsense.studio">
-  <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon-48.png">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://dualsense.studio/#website","url":"https://dualsense.studio/","name":"DualSense Studio","alternateName":"dualsense.studio","inLanguage":"en"},{"@type":"WebPage","@id":"https://dualsense.studio/#webpage","url":"https://dualsense.studio/","name":"DualSense Studio — PS5 Controller Tester & Playground","description":"Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.","inLanguage":"en","isPartOf":{"@id":"https://dualsense.studio/#website"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://dualsense.studio/assets/dualsense-studio-social.png","width":1200,"height":630},"mainEntity":{"@id":"https://dualsense.studio/#app"}},{"@type":"WebApplication","@id":"https://dualsense.studio/#app","url":"https://dualsense.studio/","name":"DualSense Studio","description":"Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.","applicationCategory":"EntertainmentApplication","operatingSystem":"Web browser","browserRequirements":"JavaScript and WebGL. Advanced controller features require desktop Chrome or Edge and controller access."}]}</script>
-  <link rel="icon" type="image/svg+xml" href="./controller/favicon.svg">
-  <link rel="stylesheet" href="./controller/controller.css">
+  <link rel="stylesheet" href="./controller/controller.css?v=ds-logo-1">
   <link rel="stylesheet" href="./controller/site-info.css">
   <link rel="stylesheet" href="./controller/range.css">
   <link rel="stylesheet" href="./controller/leaderboard.css">
-  <link rel="stylesheet" href="./controller/battery.css">
+  <link rel="stylesheet" href="./controller/battery.css?v=ds-logo-1">
   <link rel="stylesheet" href="./controller/appearance.css">
   <link rel="stylesheet" href="./controller/support.css?v=support-1">
   <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
@@ -40,7 +41,7 @@
 <body>
 <a class="skip-link" href="#about">Skip to features and help</a>
 <main>
-  <header><div class="brand"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 58 20"><path d="M1 17 9 3l8 14Z"/><circle cx="29" cy="10" r="7"/><path d="m43 3 14 14M57 3 43 17"/></svg></span>DualSense Studio<span class="edition">/ CONTROLLER PLAYGROUND</span></div><div class="header-actions"><span class="mode"><i></i><span id="mode-label">Virtual controller</span></span><div class="battery-tool" id="battery-tool">
+  <header><div class="brand"><span class="brand-icon" aria-hidden="true"><img src="./assets/dualsense-studio-logo.png" width="56" height="56" alt=""></span><span class="brand-name">DualSense Studio</span><span class="edition">/ CONTROLLER PLAYGROUND</span></div><div class="header-actions"><span class="mode"><i></i><span id="mode-label">Virtual controller</span></span><div class="battery-tool" id="battery-tool">
       <button class="battery-indicator" id="battery-connect" type="button" aria-label="Connect controller for battery status" aria-describedby="battery-tooltip">
         <span class="battery-connection" aria-hidden="true"><svg class="battery-usb" viewBox="0 0 24 24"><path d="M12 20V4m0 0-3 3m3-3 3 3M12 16l-5-4V9m5 4 5-4V6"/><circle cx="12" cy="20" r="1.5"/><circle cx="7" cy="8" r="1.3"/><path d="M15.5 3.5h3v3h-3z"/></svg><svg class="battery-bluetooth" viewBox="0 0 24 24"><path d="m7 7 10 10-5 4V3l5 4L7 17"/></svg></span>
         <span class="battery-percent">—%</span>
