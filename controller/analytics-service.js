@@ -2,6 +2,7 @@
 // Never sends raw input streams.
 export class ControllerAnalytics {
   static featureActions = {
+support: { clicked: ['surface', 'provider'] },
 touchpad_drawing: { opened: [], started: ['input_source'], cleared: [], exported: [], export_failed: [] },
 trigger_presets: { opened: [], changed: ['mode', 'strength', 'speed_hz'], reset: ['mode'], link_created: ['mode', 'strength', 'speed_hz'], link_copied: ['mode', 'strength', 'speed_hz'], loaded: ['mode', 'strength', 'speed_hz'] },
 diagnostics: { opened: [], connected: [], measurement_started: [], measurement_completed: [], reset: [] },
@@ -64,6 +65,8 @@ scorecard: { exported: ['score', 'hits', 'shots', 'weapons'], export_failed: [] 
       else if (key === 'target' && ['picker', 'light', 'body'].includes(value)) payload.target = value;
       else if (key === 'method' && ['preset', 'picker', 'hex'].includes(value)) payload.method = value;
       else if (key === 'source' && ['toolbar', 'button'].includes(value)) payload.source = value;
+      else if (key === 'surface' && value === 'studio') payload.surface = value;
+      else if (key === 'provider' && value === 'patreon') payload.provider = value;
       else if (key === 'stage' && ['connection', 'write'].includes(value)) payload.stage = value;
       else if (['score', 'hits', 'shots', 'strength', 'speed_hz'].includes(key) && Number.isFinite(value)) payload[key] = value;
     }
