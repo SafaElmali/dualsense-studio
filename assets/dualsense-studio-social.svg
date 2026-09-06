@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow"><stop stop-color="#213659"/><stop offset="1" stop-color="#111215"/></radialGradient>
+    <linearGradient id="shell" x1="0" y1="0" x2="0.7" y2="1"><stop stop-color="#f3f4f7"/><stop offset="1" stop-color="#abb6c6"/></linearGradient>
+    <linearGradient id="pad" x2="0" y2="1"><stop stop-color="#d7dce5"/><stop offset="1" stop-color="#8f9bad"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#111215"/>
+  <rect x="600" width="600" height="630" fill="url(#glow)"/>
+  <path d="M64 96h1072M64 532h1072" stroke="#ffffff" stroke-opacity=".13"/>
+  <circle cx="76" cy="62" r="5" fill="#8bacff"/>
+  <text x="96" y="68" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="600" letter-spacing="3" fill="#a5b8da">CONTROLLER PLAYGROUND</text>
+  <text x="62" y="238" font-family="Helvetica,Arial,sans-serif" font-size="74" font-weight="700" letter-spacing="-3" fill="#f2f4f8">DualSense</text>
+  <text x="62" y="318" font-family="Helvetica,Arial,sans-serif" font-size="74" font-weight="700" letter-spacing="-3" fill="#a6bdff">Studio.</text>
+  <text x="66" y="386" font-family="Helvetica,Arial,sans-serif" font-size="23" fill="#aab5c8">Test your controller. Find your aim.</text>
+  <text x="66" y="422" font-family="Helvetica,Arial,sans-serif" font-size="23" fill="#aab5c8">Make something with it.</text>
+  <g transform="translate(677 177) rotate(-8 220 140)">
+    <ellipse cx="215" cy="275" rx="178" ry="28" fill="#06090f" opacity=".5"/>
+    <path d="M57 22Q77 4 105 10h209q31-2 49 20l40 193q7 42-19 46-18 4-31-21l-40-65H116l-42 70q-13 24-33 16-21-8-14-45Z" fill="#0d1017" stroke="#465162" stroke-width="3"/>
+    <path d="M61 25Q76 9 111 13l19 119-28 43-46 82q-12 19-22 7-10-9-6-38Z" fill="url(#shell)"/>
+    <path d="M312 13q37-2 52 20l39 194q6 31-9 39-14 7-27-16l-42-75-31-40Z" fill="url(#shell)"/>
+    <path d="M119 17h187l-16 86q-2 14-20 14H155q-19-1-21-15Z" fill="url(#pad)" stroke="#9bb7ff" stroke-width="4"/>
+    <g fill="#242a35" stroke="#424c5e" stroke-width="4"><circle cx="150" cy="160" r="33"/><circle cx="278" cy="160" r="33"/></g>
+    <g fill="#181d26" stroke="#667083" stroke-width="2"><circle cx="150" cy="160" r="24"/><circle cx="278" cy="160" r="24"/></g>
+    <path d="M72 63h17v17h17v17H89v17H72V97H55V80h17Z" fill="#c2cbd8" stroke="#8590a2" stroke-width="2"/>
+    <g fill="#dce1e8" stroke="#909aad" stroke-width="1.5"><circle cx="335" cy="61" r="13"/><circle cx="362" cy="88" r="13"/><circle cx="335" cy="115" r="13"/><circle cx="308" cy="88" r="13"/></g>
+    <g stroke="#6a7a94" stroke-width="1.7" fill="none"><path d="m335 54 7 12h-14Z"/><circle cx="362" cy="88" r="6"/><path d="m330 110 10 10m0-10-10 10"/><rect x="302" y="82" width="12" height="12"/></g>
+    <g fill="#647287"><circle cx="205" cy="136" r="2"/><circle cx="215" cy="136" r="2"/><circle cx="225" cy="136" r="2"/><circle cx="210" cy="144" r="2"/><circle cx="220" cy="144" r="2"/></g>
+    <rect x="201" y="184" width="28" height="5" rx="2.5" fill="#b3bdcc"/>
+  </g>
+  <text x="66" y="578" font-family="Helvetica,Arial,sans-serif" font-size="24" fill="#eef3ff">dualsense.studio</text>
+  <text x="1134" y="575" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="15" fill="#8997ae">An independent PS5 controller project</text>
+</svg>

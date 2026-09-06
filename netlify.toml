@@ -5,3 +5,25 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# Keep old shared links working while consolidating the public domain.
+# Netlify preserves query parameters when the destination defines none.
+[[redirects]]
+  from = "https://dualsense-controller.netlify.app/*"
+  to = "https://dualsense.studio/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.dualsense.studio/*"
+  to = "https://dualsense.studio/:splat"
+  status = 301
+  force = true
+
+# A canonical tag consolidates index.html without a redirect: Netlify's
+# Pretty URLs may normalize that path to / before redirect matching.
+# Leave API endpoints and non-matching paths to their normal handlers.
+[[headers]]
+  for = "/404.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
