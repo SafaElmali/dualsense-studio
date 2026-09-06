@@ -10,4 +10,10 @@
 .studio-support-action a:hover{background:#b9dbc62b;border-color:#c4e5cf99;color:#f0fff5}
 .studio-support-action a:focus-visible{outline:2px solid #c4e5cf;outline-offset:4px}
 .studio-support-action small{color:#93a49a;font:11px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.studio-support-option{display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;text-align:center}
+.studio-support-option[hidden]{display:none}
+.studio-support-action .studio-support-tip{background:#f4d878;border-color:#f4d878;color:#20251d}
+.studio-support-action .studio-support-tip:hover{background:#ffe69c;border-color:#ffe69c;color:#121810}
+.studio-support-action .studio-support-monthly{padding:7px 0;border-color:transparent;background:transparent;color:#b5c9bd;font-size:12px;font-weight:500;gap:9px}
+.studio-support-action .studio-support-monthly:hover{background:transparent;border-color:transparent;color:#f0fff5;text-decoration:underline;text-underline-offset:4px}
 @media(max-width:720px){.studio-support{flex-direction:column;align-items:stretch;gap:22px;padding:23px}.studio-support-copy{gap:14px;align-items:flex-start}.studio-support h2{font-size:19px}.studio-support-action a{width:100%}.studio-support-action{align-items:stretch;text-align:center}}
