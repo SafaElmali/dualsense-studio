@@ -22,5 +22,5 @@
 .battery-tool.battery-details-dismissed .battery-tooltip{opacity:0;visibility:hidden}
 @media(max-width:1050px){.header-actions .mode{display:none}}
 @media(max-width:650px){.header-actions .battery-indicator{height:40px;gap:6px;padding:0 5px 0 9px;border-radius:13px}.battery-percent{font-size:14px;min-width:34px}.battery-model,.battery-model canvas{width:59px;height:34px}.header-actions{flex-shrink:0}.battery-connection svg{width:17px;height:17px}}
-@media(max-width:420px){header .brand-icon{display:none}header{gap:10px}.header-actions{gap:8px}}
+@media(max-width:420px){header .brand-name{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}header .brand-icon{padding-right:0;border:0}header{gap:10px}.header-actions{gap:8px}}
 @media(max-width:650px){.battery-tool[data-status=permission] .battery-percent{max-width:84px;font-size:11px}.battery-tool[data-status=permission] .battery-connection,.battery-tool[data-status=permission] .battery-charge{display:none}.battery-tool[data-status=permission] .battery-model,.battery-tool[data-status=permission] .battery-model canvas{width:45px}}
