@@ -9,6 +9,7 @@
   <link rel="icon" type="image/svg+xml" href="./controller/favicon.svg">
   <link rel="stylesheet" href="./controller/controller.css">
 <link rel="stylesheet" href="./controller/range.css">
+  <link rel="stylesheet" href="./controller/leaderboard.css">
   <link rel="stylesheet" href="./controller/battery.css">
   <link rel="stylesheet" href="./controller/appearance.css">
   <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
@@ -154,10 +155,24 @@
   <p class="studio-description">These are the readings your browser receives. This check does not change calibration or measure end-to-end input latency.</p>
 </dialog>
 <dialog id="leaderboard" class="studio-dialog" aria-labelledby="leaderboard-heading">
-  <div class="range-header"><div><span class="range-eyebrow">CONTROLLER STUDIO / COMMUNITY</span><h2 id="leaderboard-heading">The leaderboard.</h2></div><button id="leaderboard-close" class="retry-button">Back to game</button></div>
-  <p class="studio-description">20 seconds. Make them count. Play a round, then submit your best shot.</p>
-  <div class="leaderboard-table"><table><thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col">Score</th><th scope="col">Accuracy</th><th scope="col">Weapon</th></tr></thead><tbody id="leaderboard-rows"></tbody></table></div>
-  <div class="studio-toolbar"><button id="leaderboard-refresh" class="retry-button">Refresh scores</button></div><p id="leaderboard-status" class="studio-description" role="status"></p>
+  <div class="leaderboard-topbar">
+    <span class="leaderboard-wordmark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v7a4 4 0 0 1-8 0V3ZM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 14v6m-4 1h8"/></svg>The firing line <span>/ RANKINGS</span></span>
+    <button id="leaderboard-close" class="leaderboard-button">Back to game</button>
+  </div>
+  <div class="leaderboard-scroll" tabindex="0" aria-label="Leaderboard standings">
+    <div class="leaderboard-intro"><div><span class="leaderboard-eyebrow">20 SECONDS. EVERY SHOT COUNTS.</span><h2 id="leaderboard-heading">Aim for the top<span>.</span></h2><p>A little focus. A better score. Your next place is waiting.</p></div><span class="leaderboard-format">20<span>SECOND CHALLENGE</span></span></div>
+    <div id="leaderboard-content" aria-busy="true">
+      <div id="leaderboard-podium" class="leaderboard-podium" aria-label="Top three players" hidden></div>
+      <div id="leaderboard-standings" hidden>
+        <div class="leaderboard-section-heading"><h3>All rankings <span>TOP 50</span></h3><span id="leaderboard-count"></span></div>
+        <div class="leaderboard-table"><table aria-label="Target practice rankings"><thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col">Score</th><th scope="col" class="leaderboard-accuracy-heading">Accuracy</th><th scope="col" class="leaderboard-weapon-column">Loadout</th></tr></thead><tbody id="leaderboard-rows"></tbody></table></div>
+        <p class="leaderboard-rules">Best submitted score per browser. Ties are ranked by accuracy, then earliest submission.</p>
+      </div>
+      <div id="leaderboard-placeholder" class="leaderboard-placeholder"><span class="leaderboard-state-mark" aria-hidden="true"></span><h3 id="leaderboard-state-heading">Lining up the scores</h3><p id="leaderboard-state-description">The next spot could be yours.</p></div>
+    </div>
+  </div>
+  <div class="leaderboard-footer"><div id="leaderboard-personal" class="leaderboard-personal"></div><button id="leaderboard-refresh" class="leaderboard-button" aria-label="Refresh scores"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m10-3a7 7 0 0 0-12-3L4 9m1 6a7 7 0 0 0 12 3l3-3"/></svg><span>Refresh</span></button></div>
+  <p id="leaderboard-status" class="leaderboard-announcement" role="status"></p>
 </dialog>
 <script type="module" src="./controller/controller-app.js"></script>
 </body>
