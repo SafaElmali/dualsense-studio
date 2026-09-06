@@ -1,4 +1,4 @@
-import { ControllerAnalytics } from './analytics-service.js?v=support-1';
+import { ControllerAnalytics } from './analytics-service.js?v=support-2';
 
 // PostHog project tokens are public ingestion identifiers, not account secrets.
 const projectToken = 'phc_AiB3VZMCS3jcgL4ZHuMXUpeHjnGw7PNwa65u9JS67yd8';

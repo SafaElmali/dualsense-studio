@@ -75,7 +75,7 @@ export class ControllerAnalytics {
       else if (key === 'method' && ['preset', 'picker', 'hex'].includes(value)) payload.method = value;
       else if (key === 'source' && ['toolbar', 'button'].includes(value)) payload.source = value;
       else if (key === 'surface' && value === 'studio') payload.surface = value;
-      else if (key === 'provider' && value === 'patreon') payload.provider = value;
+      else if (key === 'provider' && ['patreon', 'buymeacoffee'].includes(value)) payload.provider = value;
       else if (key === 'stage' && ['connection', 'write'].includes(value)) payload.stage = value;
       else if (['score', 'hits', 'shots', 'strength', 'speed_hz'].includes(key) && Number.isFinite(value)) payload[key] = value;
     }
