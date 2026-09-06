@@ -8,7 +8,7 @@
 .battery-bluetooth,.battery-tool[data-transport=Bluetooth] .battery-usb{display:none}
 .battery-tool[data-transport=Bluetooth] .battery-bluetooth{display:block}
 .battery-percent{min-width:37px;font:600 15px/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:.02em;text-align:right}
-.battery-tool[data-status=permission] .battery-percent{font-size:12px;font-family:inherit;letter-spacing:0}
+.battery-tool[data-status=permission] .battery-percent{max-width:90px;font-size:12px;line-height:1.2;font-family:inherit;letter-spacing:0;text-align:left}
 .battery-indicator .battery-charge{width:10px;height:17px;fill:currentColor;stroke:none;margin-left:-3px;margin-right:-5px}
 .battery-charge[hidden]{display:block;visibility:hidden}
 .battery-model{display:grid;place-items:center;width:68px;height:38px;margin-left:-3px}
@@ -23,3 +23,4 @@
 @media(max-width:1050px){.header-actions .mode{display:none}}
 @media(max-width:650px){.header-actions .battery-indicator{height:40px;gap:6px;padding:0 5px 0 9px;border-radius:13px}.battery-percent{font-size:14px;min-width:34px}.battery-model,.battery-model canvas{width:59px;height:34px}.header-actions{flex-shrink:0}.battery-connection svg{width:17px;height:17px}}
 @media(max-width:420px){header .brand-icon{display:none}header{gap:10px}.header-actions{gap:8px}}
+@media(max-width:650px){.battery-tool[data-status=permission] .battery-percent{max-width:84px;font-size:11px}.battery-tool[data-status=permission] .battery-connection,.battery-tool[data-status=permission] .battery-charge{display:none}.battery-tool[data-status=permission] .battery-model,.battery-tool[data-status=permission] .battery-model canvas{width:45px}}

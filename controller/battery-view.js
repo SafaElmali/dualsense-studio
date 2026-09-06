@@ -74,7 +74,7 @@ export class BatteryView {
     const needsAccess = this.supported && gamepadConnected && !connected;
     this.root.dataset.status = needsAccess ? 'permission' : status;
     this.root.dataset.transport = transport || '';
-    this.root.querySelector('.battery-percent').textContent = needsAccess ? 'Enable' : level == null ? '—%' : `${level}%`;
+    this.root.querySelector('.battery-percent').textContent = needsAccess ? 'Allow battery access' : level == null ? '—%' : `${level}%`;
     this.root.querySelector('.battery-charge').toggleAttribute('hidden', status !== 'charging');
     this.root.style.setProperty('--battery-color', level == null ? '#8b929e' : level <= 15 ? '#ff8b86' : level <= 25 ? '#f0cb7e' : '#63e7b3');
     this.root.style.setProperty('--battery-fill', `${level || 0}%`);
@@ -85,7 +85,7 @@ export class BatteryView {
       : level == null ? 'Battery level is unavailable in this controller report.'
       : `${transport} · ${status === 'full' ? 'Fully charged' : status === 'charging' ? 'Charging' : 'On battery'}. ${level}% estimated charge. The controller reports in 10% steps.`;
     this.setNotice(message);
-    this.button.setAttribute('aria-label', needsAccess ? 'Enable controller battery access' : !connected ? 'Connect controller for battery status' : `Controller battery: ${level == null ? 'unavailable' : `${level}%`}${status === 'charging' ? ', charging' : status === 'full' ? ', fully charged' : ''}`);
+    this.button.setAttribute('aria-label', needsAccess ? 'Allow battery access' : !connected ? 'Connect controller for battery status' : `Controller battery: ${level == null ? 'unavailable' : `${level}%`}${status === 'charging' ? ', charging' : status === 'full' ? ', fully charged' : ''}`);
     this.setBusy(false);
     this.updateGraphic();
   }
