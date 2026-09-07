@@ -99,3 +99,17 @@ test('essential feature descriptions and honest limitations are present without 
 });
 
 
+
+test('coffee support is visible and usable before JavaScript or the 3D controller loads', async () => {
+  for (const page of pages) {
+    const html = await read(page);
+    const support = html.match(/<(section|aside)\b[^>]*\bdata-support(?=[\s>])[\s\S]*?<\/\1>/)?.[0];
+    assert.ok(support, `${page}: support section exists in server-rendered HTML`);
+    assert.doesNotMatch(support, /<[^>]*\shidden(?=[\s=>])/);
+    const link = tags(support, 'a').find(tag => tag.href === 'https://buymeacoffee.com/dualsensestudio');
+    assert.ok(link, `${page}: support link works without JavaScript`);
+    assert.equal(link.target, '_blank');
+    assert.match(link.rel, /noopener/);
+    assert.match(support, /alt="Buy me a coffee"/);
+  }
+});

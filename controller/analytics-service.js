@@ -25,7 +25,7 @@ scorecard: { exported: ['score', 'hits', 'shots', 'weapons'], export_failed: [] 
 
   static propertyValues = {
 topic: ["connection","stick_drift","device_access","virtual_controller","compatibility","independence","pricing","stick_arrows"],
-destination: ['studio', 'streamer', 'obs_setup', 'x'],
+destination: ['studio', 'streamer', 'obs_setup', 'x', 'github'],
 placement: ['brand', 'header', 'intro', 'help'],
 provider: ['patreon', 'buymeacoffee'],
 surface: ["studio","target_practice"],
