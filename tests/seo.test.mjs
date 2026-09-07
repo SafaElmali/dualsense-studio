@@ -36,7 +36,24 @@ test('each public landing page has one clean canonical, unique metadata and a cr
   assert.equal(descriptions.size, publicPages.length);
 });
 
-
+test('social previews use real wide PNGs with accurate dimensions and accessible descriptions', async () => {
+  for (const page of pages) {
+    const html = await read(page), url = new URL(meta(html, 'og:image'));
+    assert.equal(url.origin, origin);
+    assert.equal(meta(html, 'twitter:card'), 'summary_large_image');
+    assert.equal(meta(html, 'twitter:image'), url.href);
+    assert.ok(meta(html, 'og:image:alt')); assert.ok(meta(html, 'twitter:image:alt'));
+    const png = await readFile(new URL('.' + url.pathname, root));
+    assert.equal(png.subarray(1, 4).toString(), 'PNG');
+    assert.equal(png.readUInt32BE(16), Number(meta(html, 'og:image:width')));
+    assert.equal(png.readUInt32BE(20), Number(meta(html, 'og:image:height')));
+    const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+    assert.ok(width >= 1200 && height >= 600, 'Large sharing cards need sufficient image resolution');
+    assert.ok(width / height >= 1.8 && width / height <= 2, 'Sharing image should have a wide card aspect ratio');
+    // Both landing pages use the illustrated PNG cover.
+    assert.ok(png.length < 2_000_000, `${page}: social preview exceeds its image budget`);
+  }
+});
 
 test('sitemap includes exactly indexable destinations; capture stays crawlable but noindex', async () => {
   const urls = await sitemapUrls();
