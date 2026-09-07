@@ -22,6 +22,10 @@ Explore it in 3D, test your aim, or turn the touchpad into a canvas. All in your
 
 Bring your inputs on stream with a customizable 3D overlay for OBS. Set your angle, colors, button highlights, stick arrows, and trigger meters.
 
+[![Watch the Streamer mode launch video — customize your controller, save your look, and add it to OBS](docs/media/streamer-launch.gif)](docs/media/streamer-launch.mp4)
+
+[Watch the full 30-second video with audio](docs/media/streamer-launch.mp4).
+
 [Explore the OBS guide](docs/streamer.md).
 
 ## Jump in
