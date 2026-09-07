@@ -66,6 +66,7 @@ Tests cover persistent reads, round ownership and expiry, invalid inputs, idempo
 
 The canonical public origin is `https://dualsense.studio`. Search metadata and JSON-LD live in the HTML so crawlers do not need the 3D renderer. The build includes `robots.txt`, `sitemap.xml`, a branded `404.html`, PNG icons, and the social preview in `assets/`. Appearance and trigger preset URLs retain their settings while canonicalizing to the unparameterized page. OBS capture pages stay crawlable but carry `noindex`.
 
+Run `npm run test:seo` for a build and targeted checks of metadata, indexing, structured data, links and social assets. The sitemap lists the pages shipped by the full build.
 
 ## Attribution
 
