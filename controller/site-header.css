@@ -3,14 +3,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  gap: 9px;
-  min-height: 44px;
-  padding: 0 14px;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
   border: 1px solid #ffffff26;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #ffffff05;
   color: #e5e9e7;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 550;
   line-height: 1;
   text-decoration: none;
@@ -25,14 +25,14 @@
   outline: 2px solid currentColor;
   outline-offset: 4px;
 }
-.github-link svg { width: 19px; height: 19px; fill: currentColor; flex-shrink: 0; }
-.github-link .github-external { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .65; }
+.github-link svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+.github-link .github-external { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .65; }
 @media (max-width: 1200px) {
   header .edition { display: none; }
   .header-actions .mode { display: none; }
 }
 @media (max-width: 720px) {
-  .github-link { width: 44px; padding: 0; }
+  .github-link { width: 44px; min-height: 44px; padding: 0; }
   .github-link span, .github-link .github-external { display: none; }
 }
 @media (max-width: 600px) {
