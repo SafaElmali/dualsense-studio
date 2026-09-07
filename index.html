@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="./controller/controller.css?v=ds-logo-1">
   <link rel="stylesheet" href="./controller/site-info.css?v=contact-1">
   <link rel="stylesheet" href="./controller/range.css">
-  <link rel="stylesheet" href="./controller/leaderboard.css">
+  <link rel="stylesheet" href="./controller/leaderboard.css?v=controller-20s-v2">
   <link rel="stylesheet" href="./controller/battery.css?v=ds-logo-1">
   <link rel="stylesheet" href="./controller/appearance.css?v=highlights-2">
   <link rel="stylesheet" href="./controller/stick-arrows.css?v=arrow-controls-2">
@@ -231,7 +231,16 @@
     <button id="leaderboard-close" class="leaderboard-button">Back to game</button>
   </div>
   <div class="leaderboard-scroll" tabindex="0" aria-label="Leaderboard standings">
-    <div class="leaderboard-intro"><div><span class="leaderboard-eyebrow">20 SECONDS. EVERY SHOT COUNTS.</span><h2 id="leaderboard-heading">Aim for the top<span>.</span></h2><p>A little focus. A better score. Your next place is waiting.</p></div><span class="leaderboard-format">20<span>SECOND CHALLENGE</span></span></div>
+    <div class="leaderboard-intro"><div><span id="leaderboard-eyebrow" class="leaderboard-eyebrow">20 SECONDS. EVERY SHOT COUNTS.</span><h2 id="leaderboard-heading">Aim for the top<span>.</span></h2><p>A little focus. A better score. Your next place is waiting.</p></div><span id="leaderboard-format" class="leaderboard-format">20<span>SECOND CHALLENGE</span></span></div>
+    <div class="leaderboard-tabs" role="tablist" aria-label="Leaderboard format">
+      <button type="button" id="leaderboard-tab-current" role="tab" data-board="current" aria-selected="true" aria-controls="leaderboard-board-panel">20 seconds · Controller only</button>
+      <button type="button" id="leaderboard-tab-previous" role="tab" data-board="previous" aria-selected="false" aria-controls="leaderboard-board-panel" tabindex="-1">Previous leaderboard</button>
+    </div>
+    <div id="leaderboard-board-panel" role="tabpanel" aria-labelledby="leaderboard-tab-current" tabindex="0">
+    <p id="leaderboard-board-note" class="leaderboard-board-note">A fresh start for equal rounds: 20 seconds, controller only. Previous scores are preserved in the next tab.</p>
+    <label id="leaderboard-archive-picker" class="leaderboard-archive-picker" hidden>Archive
+      <select id="leaderboard-archive"><option value="previous">Previous 20-second rounds</option><option value="original">Original longer rounds</option></select>
+    </label>
     <div id="leaderboard-content" aria-busy="true">
       <div id="leaderboard-podium" class="leaderboard-podium" aria-label="Top three players" hidden></div>
       <div id="leaderboard-standings" hidden>
@@ -242,9 +251,10 @@
       <div id="leaderboard-placeholder" class="leaderboard-placeholder"><span class="leaderboard-state-mark" aria-hidden="true"></span><h3 id="leaderboard-state-heading">Lining up the scores</h3><p id="leaderboard-state-description">The next spot could be yours.</p></div>
     </div>
   </div>
+  </div>
   <div class="leaderboard-footer"><div id="leaderboard-personal" class="leaderboard-personal"></div><button id="leaderboard-refresh" class="leaderboard-button" aria-label="Refresh scores"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m10-3a7 7 0 0 0-12-3L4 9m1 6a7 7 0 0 0 12 3l3-3"/></svg><span>Refresh</span></button></div>
   <p id="leaderboard-status" class="leaderboard-announcement" role="status"></p>
 </dialog>
-<script type="module" src="./controller/controller-app.js?v=contact-1"></script>
+<script type="module" src="./controller/controller-app.js?v=controller-20s-v2"></script>
 </body>
 </html>

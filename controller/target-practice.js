@@ -1,3 +1,5 @@
+import { rangeRules } from './range-rules.js';
+
 export class TargetPractice {
   static weapons = Object.freeze({
     shooting: { label: 'Pistol', automatic: false, interval: .22, threshold: .56, spread: 0 },
@@ -24,7 +26,7 @@ export class TargetPractice {
     this.state = 'playing';
   }
 
-  get remaining() { return Math.max(0, 20 - this.elapsed); }
+  get remaining() { return Math.max(0, rangeRules.durationSeconds - this.elapsed); }
   get accuracy() { return this.shots ? Math.round(this.hits / this.shots * 100) : 0; }
 
   result() {
@@ -63,7 +65,7 @@ export class TargetPractice {
 
   step(dt, { x = 0, y = 0, pressure = 0 } = {}) {
     if (this.state !== 'playing' || !Number.isFinite(dt) || dt <= 0) return;
-    this.elapsed = Math.min(20, this.elapsed + dt);
+    this.elapsed = Math.min(rangeRules.durationSeconds, this.elapsed + dt);
     if (!this.remaining) { this.state = 'finished'; this.armed = false; return; }
     // Do not replay missed shots after a stalled frame or tab suspension.
     const movementTime = Math.min(dt, .05);

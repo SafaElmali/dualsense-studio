@@ -100,9 +100,9 @@ The range uses a separate Canvas 2D renderer and suspends the 3D render while op
 
 ## Firing-line presentation
 
-Target practice uses a dedicated arena layout with a compact HUD, remaining-time bar, weapon loadout, and an expandable controller setup panel. The locally drawn firing bay includes illuminated hanging targets, impact particles, hit markers, and recoil feedback in the reticle. The arena keeps a fixed coordinate system inside a fitted viewport to keep target positions consistent at different screen sizes. Reduced-motion preference removes decorative particles, tracers, and reticle recoil. The 20-second round, score rules, and existing leaderboard records are unchanged.
+Target practice uses a dedicated arena layout with a compact HUD, remaining-time bar, weapon loadout, and an expandable controller setup panel. The locally drawn firing bay includes illuminated hanging targets, impact particles, hit markers, and recoil feedback in the reticle. The arena keeps a fixed coordinate system inside a fitted viewport to keep target positions consistent at different screen sizes. Reduced-motion preference removes decorative particles, tracers, and reticle recoil. The current leaderboard uses 20-second controller-only rounds. Personal bests start fresh for these rules; the Previous leaderboard tab keeps older scores available without comparing different formats.
 
-Completed rounds show score, hits/accuracy, optional name submission, replay, and scorecard download in a centered arena card. The name field receives focus when play ends with focus on the canvas; typing names does not affect gameplay. The leaderboard is launched from inside the game only. Offline/practice-only rounds explain why submission is unavailable while replay and scorecard exports still work.
+Completed rounds show score, hits/accuracy, optional name submission, replay, and scorecard download in a centered arena card. The name field receives focus when play ends with focus on the canvas; typing names does not affect gameplay. The leaderboard is launched from inside the game only. Offline/practice-only rounds explain why submission is unavailable while replay and scorecard exports still work. When ranked rules change, older tabs show a refresh action before another ranked round can start or be submitted.
 
 ## Touchpad drawing
 

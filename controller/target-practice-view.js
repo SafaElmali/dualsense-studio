@@ -1,12 +1,13 @@
 import { RangeRenderer } from './range-renderer.js';
 import { Scorecard } from './scorecard.js';
-import { TargetPractice } from './target-practice.js';
+import { TargetPractice } from './target-practice.js?v=controller-20s-v2';
 import { TargetPracticeInput } from './target-practice-input.js';
+import { rangeRules } from './range-rules.js';
 
 export class TargetPracticeView {
   constructor({ leaderboardClient, getPad, onWeapon, onEnableEffects, onStopEffects, effectsActive, onShot, onOpen, onClose, onAction = () => {} }) {
     this.leaderboardClient = leaderboardClient; this.roundRequest = 0; this.roundId = null; this.starting = false; this.submitting = false;
-    this.onAction = onAction;
+    this.onAction = onAction; this.rulesChanged = false;
     this.controller = new TargetPracticeInput(getPad); this.onWeapon = onWeapon; this.onEnableEffects = onEnableEffects;
     this.onStopEffects = onStopEffects; this.effectsActive = effectsActive; this.onOpen = onOpen; this.onClose = onClose;
     this.dialog = document.getElementById('range');
@@ -17,7 +18,7 @@ export class TargetPracticeView {
       this.impacts.push({ ...shot, at: this.game.elapsed }); onShot?.();
     } });
     this.best = 0;
-    try { this.best = Number(localStorage.getItem('dualsense-range-best-20s')) || 0; } catch { /* Storage is optional. */ }
+    try { this.best = Number(localStorage.getItem(`dualsense-range-best-${rangeRules.rulesVersion}`)) || 0; } catch { /* Storage is optional. */ }
     this.$('range-weapon').replaceChildren(...Object.entries(TargetPractice.weapons).map(([key, weapon]) => new Option(weapon.label, key)));
     this.$('range-weapon').addEventListener('change', event => this.selectWeapon(event.target.value));
     this.$('range-save-card').addEventListener('click', async () => {
@@ -27,7 +28,7 @@ export class TargetPracticeView {
     });
     try { this.$('range-nickname').value = localStorage.getItem('dualsense-nickname') || ''; } catch { /* Optional convenience. */ }
     this.$('range-submit-form').addEventListener('submit', event => { event.preventDefault(); void this.submitScore(); });
-    this.$('range-start').addEventListener('click', () => this.start());
+    this.$('range-start').addEventListener('click', () => this.rulesChanged ? window.location.reload() : this.start());
     this.$('range-pause').addEventListener('click', () => this.pause());
     this.$('range-close').addEventListener('click', () => this.close());
     this.$('range-effects').addEventListener('click', async () => {
@@ -55,7 +56,7 @@ export class TargetPracticeView {
     if (!this.connected) this.onAction('target_practice', 'controller_required');
     this.game.setWeapon(Object.hasOwn(TargetPractice.weapons, mode) ? mode : 'shooting');
     this.game.start(); this.game.stop(); this.impacts = []; this.lastResult = null; this.roundId = null;
-    this.$('range-submit-status').textContent = ''; this.$('range-ranking-status').textContent = '';
+    this.$('range-submit-status').textContent = ''; this.$('range-ranking-status').textContent = this.rulesChanged ? 'The leaderboard rules have changed. Refresh this page to continue.' : '';
     this.$('range-download-status').textContent = '';
     this.$('range-weapon').value = this.game.weapon;
     this.onWeapon(this.game.weapon);
@@ -69,6 +70,7 @@ export class TargetPracticeView {
   release() { this.controller.reset(); }
 
   async start() {
+    if (this.rulesChanged) return;
     if (!this.controller.connected || this.game.state === 'playing' || this.starting || this.submitting || document.getElementById('leaderboard')?.open) return;
     this.release(); this.impacts = []; this.previousTime = 0;
     this.$('range-result').textContent = ''; this.$('range-download-status').textContent = '';
@@ -80,10 +82,17 @@ export class TargetPracticeView {
       this.$('range-submit-status').textContent = ''; this.$('range-ranking-status').textContent = 'Getting your round ready…'; this.update();
       try {
         const ticket = await this.leaderboardClient.start();
-        if (request === this.roundRequest) { this.roundId = ticket.roundId; this.$('range-ranking-status').textContent = 'Finish your round to submit to the leaderboard.'; }
-      } catch (error) { if (request === this.roundRequest) { this.$('range-ranking-status').textContent = error.message; this.onAction('target_practice', 'ranking_unavailable'); } }
+        if (request === this.roundRequest) { this.roundId = ticket.roundId; this.$('range-ranking-status').textContent = '20 seconds · Controller only. Finish your round to submit.'; }
+      } catch (error) {
+        if (request === this.roundRequest) {
+          this.$('range-ranking-status').textContent = error.message;
+          if (error.code === 'rules_changed') this.requireRefresh();
+          else this.onAction('target_practice', 'ranking_unavailable');
+        }
+      }
       if (request !== this.roundRequest || !this.isOpen) return;
       this.starting = false;
+      if (this.rulesChanged) { this.update(); return; }
       if (!this.controller.connected) { this.roundId = null; this.$('range-ranking-status').textContent = ''; this.update(); return; }
       this.dialog.querySelector('.range-setup').open = false; this.dialog.scrollTop = 0;
       this.game.start(); this.gyroUsed = false; this.onAction('target_practice', 'started', { mode: this.game.weapon });
@@ -94,7 +103,7 @@ export class TargetPracticeView {
   }
 
   async submitScore() {
-    if (this.submitting || this.submitted || !this.roundId || !this.lastResult || this.game.state !== 'finished') return;
+    if (this.rulesChanged || this.submitting || this.submitted || !this.roundId || !this.lastResult || this.game.state !== 'finished') return;
     this.submitting = true; this.update(); this.onAction('leaderboard', 'submit_requested');
     const request = this.roundRequest, nickname = this.$('range-nickname').value.trim();
     this.$('range-submit-status').textContent = 'Submitting your score…';
@@ -107,8 +116,14 @@ export class TargetPracticeView {
       this.$('range-submit-status').textContent = (!result.rank ? 'Round submitted. ' : result.improved ? 'Score saved! ' : 'Your best score is already saved. ') + placement;
       this.$('range-ranking-status').textContent = '';
       this.onAction('leaderboard', 'submitted', { score: this.lastResult.score });
-    } catch (error) { if (request === this.roundRequest) { this.$('range-submit-status').textContent = error.message; this.onAction('leaderboard', 'submit_failed'); } }
+    } catch (error) { if (request === this.roundRequest) { this.$('range-submit-status').textContent = error.message; if (error.code === 'rules_changed') this.requireRefresh(); this.onAction('leaderboard', 'submit_failed'); } }
     finally { this.submitting = false; this.update(); }
+  }
+
+  requireRefresh() {
+    this.rulesChanged = true;
+    this.$('range-ranking-status').textContent = 'The leaderboard rules have changed. Refresh this page before playing another ranked round.';
+    this.onAction('target_practice', 'rules_changed');
   }
 
   pause(reason = 'user') {
@@ -147,7 +162,7 @@ export class TargetPracticeView {
     const game = this.game, connected = this.controller.connected;
     this.$('range-score').textContent = game.score.toLocaleString();
     this.$('range-time').textContent = Math.ceil(game.remaining).toString().padStart(2, '0') + 's';
-    this.$('range-time-bar').style.transform = `scaleX(${game.remaining / 20})`;
+    this.$('range-time-bar').style.transform = `scaleX(${game.remaining / rangeRules.durationSeconds})`;
     this.dialog.dataset.state = game.state;
     this.dialog.classList.toggle('time-critical', game.state === 'playing' && game.remaining <= 5);
     this.$('range-final-score').hidden = game.state !== 'finished';
@@ -159,11 +174,11 @@ export class TargetPracticeView {
     this.$('range-accuracy').textContent = game.accuracy + '%';
     this.$('range-streak').textContent = game.streak;
     this.$('range-best').textContent = this.best.toLocaleString();
-    this.$('range-start').disabled = !connected || this.starting || this.submitting;
+    this.$('range-start').disabled = !this.rulesChanged && (!connected || this.starting || this.submitting);
     this.$('range-weapon').disabled = game.state === 'playing';
     this.$('range-submit-form').hidden = game.state !== 'finished' || !this.roundId || !this.lastResult?.shots || this.starting;
     this.$('range-submit-form').dataset.submitted = String(!!this.submitted);
-    this.$('range-submit').disabled = this.submitting || this.submitted;
+    this.$('range-submit').disabled = this.submitting || this.submitted || this.rulesChanged;
     this.$('range-submit').textContent = this.submitted ? 'Score submitted' : this.submitting ? 'Submitting…' : 'Submit score';
     this.$('range-nickname').disabled = this.submitting || this.submitted;
     this.$('range-save-card').hidden = game.state !== 'finished';
@@ -175,7 +190,7 @@ export class TargetPracticeView {
     const summary = game.state === 'finished' ? `${game.hits} ${game.hits === 1 ? 'hit' : 'hits'} / ${game.shots} ${game.shots === 1 ? 'shot' : 'shots'}  ·  ${game.accuracy}% accuracy`
       : !connected ? (game.state === 'paused' ? 'Your score and timer are safe. Reconnect your controller to resume.' : 'A controller is required for target practice. Aim with the right stick or gyro and fire with R2.') : game.state === 'paused' ? 'Your timer is paused. Resume when you’re ready.' : 'Three moving targets. Four weapons. Make every shot count.';
     this.$('range-title').textContent = title; this.$('range-summary').textContent = summary;
-    this.$('range-start').textContent = !connected ? 'Controller required' : this.starting ? 'Starting…' : game.state === 'paused' ? 'Resume round' : game.state === 'finished' ? 'Play again' : 'Start round';
+    this.$('range-start').textContent = this.rulesChanged ? 'Refresh page to play' : !connected ? 'Controller required' : this.starting ? 'Starting…' : game.state === 'paused' ? 'Resume round' : game.state === 'finished' ? 'Play again' : 'Start round';
     this.$('range-feedback').textContent = this.effectsError || (this.effectsActive() ? 'Adaptive triggers active · feel your selected weapon' : 'To feel adaptive triggers, enable them before starting or while paused.');
   }
 
@@ -202,7 +217,7 @@ export class TargetPracticeView {
       this.onAction('target_practice', 'completed', this.lastResult);
       this.release(); this.onStopEffects();
       this.best = Math.max(this.best, this.game.score);
-      try { localStorage.setItem('dualsense-range-best-20s', String(this.best)); } catch { /* Storage is optional. */ }
+      try { localStorage.setItem(`dualsense-range-best-${rangeRules.rulesVersion}`, String(this.best)); } catch { /* Storage is optional. */ }
       this.$('range-result').textContent = `Round complete: ${this.game.score} points and ${this.game.accuracy}% accuracy.`;
       this.update();
       if (!this.$('range-submit-form').hidden && document.activeElement === this.canvas) this.$('range-nickname').focus({ preventScroll: true });

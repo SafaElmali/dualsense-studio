@@ -1,33 +1,58 @@
+import { rangeRules } from './range-rules.js';
+
 export class LeaderboardClient {
   constructor(fetcher = (...args) => fetch(...args)) { this.fetcher = fetcher; }
-  async request(body) {
+  async request(body, board = 'current') {
     const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 6000);
     try {
-      const response = await this.fetcher('/.netlify/functions/leaderboard', { method: body ? 'POST' : 'GET', credentials: 'same-origin', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, signal: controller.signal });
+      const response = await this.fetcher('/.netlify/functions/leaderboard' + (body ? '' : `?board=${encodeURIComponent(board)}`), { method: body ? 'POST' : 'GET', credentials: 'same-origin', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify({ ...body, ...rangeRules }) : undefined, signal: controller.signal });
       if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('The leaderboard is available on the live site. You can still play here.');
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'The leaderboard is unavailable. Please try again.');
+      if (!response.ok) throw Object.assign(new Error(data.error || 'The leaderboard is unavailable. Please try again.'), { code: data.code });
       return data;
     } catch (error) {
       if (error.name === 'AbortError' || error instanceof TypeError) throw new Error('Could not reach the leaderboard. Please try again.');
       throw error;
     } finally { clearTimeout(timeout); }
   }
-  start() { return this.request({ action: 'start' }); }
+  async start() {
+    const ticket = await this.request({ action: 'start' });
+    if (ticket.rulesVersion !== rangeRules.rulesVersion || ticket.durationSeconds !== rangeRules.durationSeconds) {
+      throw Object.assign(new Error('The leaderboard rules have changed. Refresh this page before starting a new round.'), { code: 'rules_changed' });
+    }
+    return ticket;
+  }
   submit(roundId, nickname, result) { return this.request({ action: 'submit', roundId, nickname, result }); }
-  list() { return this.request(); }
+  list(board = 'current') { return this.request(undefined, board); }
 }
 
 export class LeaderboardView {
   constructor({ client, onOpen, onClose, onAction = () => {} }) {
     this.client = client; this.onOpen = onOpen; this.onClose = onClose; this.onAction = onAction;
-    this.dialog = document.getElementById('leaderboard'); this.request = 0;
+    this.dialog = document.getElementById('leaderboard'); this.request = 0; this.board = 'current';
+    this.tabs = [...this.dialog.querySelectorAll('[role="tab"]')];
+    this.tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => this.selectBoard(tab.dataset.board === 'current' ? 'current' : document.getElementById('leaderboard-archive').value));
+      tab.addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? this.tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + this.tabs.length) % this.tabs.length;
+        this.tabs[next].focus(); this.tabs[next].click();
+      });
+    });
+    document.getElementById('leaderboard-archive').addEventListener('change', event => this.selectBoard(event.target.value));
     document.getElementById('leaderboard-close').addEventListener('click', () => this.dialog.close());
-    document.getElementById('leaderboard-refresh').addEventListener('click', () => { this.onAction('leaderboard', 'refreshed'); void this.load(); });
+    document.getElementById('leaderboard-refresh').addEventListener('click', () => { this.onAction('leaderboard', 'refreshed', { board: this.board }); void this.load(); });
     this.dialog.addEventListener('close', () => { this.request++; this.onClose(); });
   }
   get isOpen() { return this.dialog.open; }
-  open() { document.getElementById('leaderboard-close').textContent = document.getElementById('range')?.open ? 'Back to game' : 'Back to controller'; this.onOpen(); this.dialog.showModal(); this.onAction('leaderboard', 'opened'); void this.load(); }
+  open() { document.getElementById('leaderboard-close').textContent = document.getElementById('range')?.open ? 'Back to game' : 'Back to controller'; this.onOpen(); this.dialog.showModal(); this.onAction('leaderboard', 'opened', { board: this.board }); void this.load(); }
+  selectBoard(board) {
+    if (!['current', 'previous', 'original'].includes(board) || board === this.board) return;
+    this.board = board;
+    this.onAction('leaderboard', 'board_selected', { board });
+    void this.load();
+  }
   element(tag, className, text) {
     const element = document.createElement(tag);
     element.className = className;
@@ -71,11 +96,11 @@ export class LeaderboardView {
     if (entry) {
       const rank = this.element('button', 'leaderboard-personal-rank', `#${entry.rank}`);
       rank.setAttribute('aria-label', `Find your rank, number ${entry.rank}`);
-      rank.addEventListener('click', () => { this.onAction('leaderboard', 'personal_rank_clicked'); this.dialog.querySelector('.your-score')?.scrollIntoView({ block: 'center', behavior: 'instant' }); });
-      const title = this.element('strong', '', 'Your best '); title.append(this.element('span', '', `${entry.score.toLocaleString()} pts`));
+      rank.addEventListener('click', () => { this.onAction('leaderboard', 'personal_rank_clicked', { board: this.board }); this.dialog.querySelector('.your-score')?.scrollIntoView({ block: 'center', behavior: 'instant' }); });
+      const title = this.element('strong', '', this.board === 'current' ? 'Your best ' : 'Your previous best '); title.append(this.element('span', '', `${entry.score.toLocaleString()} pts`));
       copy.append(title, this.element('small', '', `${entry.accuracy}% accuracy · ${this.weapons(entry)}`)); personal.append(rank);
     } else {
-      copy.append(this.element('strong', '', 'Your next round could be the one.'), this.element('small', '', 'Finish a round and submit your score to join the top 50.'));
+      copy.append(this.element('strong', '', this.board === 'current' ? 'Your next round could be the one.' : 'These scores are preserved.'), this.element('small', '', this.board === 'current' ? 'Finish a controller round and submit your score to join the top 50.' : 'New rounds join the 20 seconds · Controller only board.'));
     }
     personal.append(copy);
   }
@@ -86,16 +111,28 @@ export class LeaderboardView {
   }
   async load() {
     const request = ++this.request;
+    const board = this.board, archived = board !== 'current';
+    this.tabs.forEach(tab => {
+      const selected = tab.dataset.board === (archived ? 'previous' : 'current');
+      tab.setAttribute('aria-selected', String(selected)); tab.tabIndex = selected ? 0 : -1;
+    });
+    document.getElementById('leaderboard-archive-picker').hidden = !archived;
+    document.getElementById('leaderboard-format').hidden = archived;
+    document.getElementById('leaderboard-eyebrow').textContent = archived ? 'PREVIOUS ROUNDS. SCORES PRESERVED.' : '20 SECONDS. EVERY SHOT COUNTS.';
+    document.getElementById('leaderboard-board-panel').setAttribute('aria-labelledby', archived ? 'leaderboard-tab-previous' : 'leaderboard-tab-current');
+    document.getElementById('leaderboard-board-note').textContent = archived
+      ? (board === 'original' ? 'The original leaderboard, before the shorter rounds. Preserved as played; closed to new scores.' : 'Previous 20-second scores may include mouse or keyboard play. Preserved as played; closed to new scores.')
+      : 'A fresh start for equal rounds: 20 seconds, controller only. Previous scores are preserved in the next tab.';
     const status = document.getElementById('leaderboard-status'), refresh = document.getElementById('leaderboard-refresh');
     status.textContent = 'Loading the leaderboard…'; refresh.disabled = true;
     const body = document.getElementById('leaderboard-rows'); body.replaceChildren();
     const podium = document.getElementById('leaderboard-podium'); podium.replaceChildren(); podium.hidden = true;
     const standings = document.getElementById('leaderboard-standings'); standings.hidden = true;
     const content = document.getElementById('leaderboard-content'); content.setAttribute('aria-busy', 'true');
-    document.getElementById('leaderboard-personal').replaceChildren(this.element('span', 'leaderboard-personal-copy', '20 seconds to make your mark.'));
-    this.placeholder('Lining up the scores', 'The next spot could be yours.');
+    document.getElementById('leaderboard-personal').replaceChildren(this.element('span', 'leaderboard-personal-copy', archived ? 'Loading previous scores…' : '20 seconds to make your mark.'));
+    this.placeholder('Lining up the scores', archived ? 'Bringing back the previous standings.' : 'The next spot could be yours.');
     try {
-      const { entries } = await this.client.list();
+      const { entries } = await this.client.list(board);
       if (request !== this.request || !this.isOpen) return;
       if (entries.length) {
         const leaders = entries.filter(entry => entry.rank <= 3);
@@ -104,13 +141,13 @@ export class LeaderboardView {
         document.getElementById('leaderboard-count').textContent = `${entries.length} ranked ${entries.length === 1 ? 'score' : 'scores'}`;
         document.getElementById('leaderboard-placeholder').hidden = true;
       } else {
-        this.placeholder('The first spot is yours to take.', 'Finish a 20-second round, submit your score, and set the pace.');
+        this.placeholder(archived ? 'No scores in this archive.' : 'The first spot is yours to take.', archived ? 'Play a new controller round to join the current leaderboard.' : 'Finish a 20-second controller round, submit your score, and set the pace.');
       }
-      this.onAction('leaderboard', 'loaded');
+      this.onAction('leaderboard', 'loaded', { board });
       const mine = entries.find(entry => entry.mine); this.personal(mine);
-      status.textContent = entries.length ? `${entries.length} ranked scores loaded.${mine ? ` Your best score is number ${mine.rank}.` : ''}` : 'The board is waiting for its first score. Finish a round and claim your place.';
+      status.textContent = entries.length ? `${entries.length} ${archived ? 'previous' : 'current'} scores loaded.${mine ? ` Your best score is number ${mine.rank}.` : ''}` : archived ? 'No archived scores.' : 'The board is waiting for its first score. Finish a controller round and claim your place.';
     } catch (error) {
-      if (request === this.request && this.isOpen) { this.onAction('leaderboard', 'load_failed'); this.placeholder('Scores are taking a breather.', error.message); status.textContent = error.message; }
+      if (request === this.request && this.isOpen) { this.onAction('leaderboard', 'load_failed', { board }); this.placeholder('Scores are taking a breather.', error.message); status.textContent = error.message; }
     } finally { if (request === this.request) { refresh.disabled = false; content.setAttribute('aria-busy', 'false'); } }
   }
 }
