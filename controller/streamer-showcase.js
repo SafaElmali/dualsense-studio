@@ -1,5 +1,4 @@
 import { StreamerChannel, ChannelError } from './streamer-channel.js';
-import { PageAnalytics } from './page-analytics.js';
 
 export class StreamerShowcaseClient {
   constructor(fetcher = (...args) => fetch(...args)) { this.fetcher = fetcher; }
@@ -38,8 +37,8 @@ export class StreamerShowcaseClient {
 }
 
 export class StreamerShowcaseView {
-  constructor(root, { client = new StreamerShowcaseClient(), onAction = () => {} } = {}) {
-    this.root = root; this.client = client; this.onAction = onAction;
+  constructor(root, { client = new StreamerShowcaseClient(), onAction = () => {}, trackLink = () => {} } = {}) {
+    this.root = root; this.client = client; this.onAction = onAction; this.trackLink = trackLink;
     this.form = root.querySelector('form');
     this.toggle = root.querySelector('[data-showcase-toggle]');
     this.panel = root.querySelector('[data-showcase-panel]');
@@ -76,7 +75,7 @@ export class StreamerShowcaseView {
         const name = document.createElement('strong'); name.textContent = channel.name;
         const action = document.createElement('span'); action.className = 'showcase-visit'; action.textContent = 'Visit channel ↗';
         link.append(badge, name, action); card.append(link); list.append(card);
-        PageAnalytics.trackLink(link, () => this.onAction('channel_opened', { platform }));
+        this.trackLink(link, () => this.onAction('channel_opened', { platform }));
       }
       list.hidden = !channels.length;
       this.root.querySelector('[data-showcase-empty]').hidden = !!channels.length;

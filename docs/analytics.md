@@ -66,3 +66,7 @@ To verify in PostHog, open **Activity → Events**, filter event names by the pr
 `controller_support_clicked` records the provider (`buymeacoffee`) and surface (`studio` or `builder`). Older events may contain `patreon`, which is no longer offered in the UI. It measures an outgoing click, not a completed tip. No payment details or destination URLs are custom event properties. See [support configuration](development.md#optional-project-support).
 
 `controller_target_practice_rules_changed` records a required rules refresh without error text or player data. It is a passive event and does not extend active time.
+
+## Content blockers and startup
+
+Controller, Streamer, and OBS capture entry points use `AppEvents` to load analytics and page tracking asynchronously. Neither optional import blocks rendering, inputs, settings, or links. Original analytics URLs remain unchanged; a blocked module is not retried through a different path or proxy. Reporting becomes a no-op on failure, with at most 100 early events buffered while the module loads. Shared showcase rendering has no required analytics import.

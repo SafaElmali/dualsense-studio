@@ -8,15 +8,16 @@ import { StreamerInput } from './streamer-input.js';
 import { StreamerDemo } from './streamer-demo.js?v=feature-events-1';
 import { StreamerSettings } from './streamer-settings.js?v=arrow-controls-2';
 import { StreamerRotation } from './streamer-rotation.js';
-import { analytics } from './analytics.js?v=showcase-1';
-import { PageAnalytics } from './page-analytics.js';
-import { StreamerShowcaseView } from './streamer-showcase.js';
+import { AppEvents } from './app-events.js';
+import { StreamerShowcaseView } from './streamer-showcase.js?v=optional-events-1';
 
 const $ = id => document.getElementById(id);
 const capture = document.body.classList.contains('streamer-overlay');
 const surface = capture ? 'capture' : 'builder';
-new PageAnalytics(document, { analytics, surface });
+const analytics = new AppEvents();
+analytics.trackPage(document, surface);
 if (!capture) new StreamerShowcaseView($('streamer-showcase'), {
+  trackLink: (link, onOpen) => analytics.trackLink(link, onOpen),
   onAction: (action, properties) => analytics.featureAction('streamer_showcase', action, { ...properties, surface }),
 });
 document.querySelectorAll('[data-support]').forEach(root => {
@@ -201,7 +202,7 @@ if (capture) {
     else $('streamer-canvas').focus({ preventScroll: true });
   };
   panel.hidden = location.hash !== '#setup';
-  PageAnalytics.trackLink($('edit-overlay'), () => track('editor_opened'));
+  analytics.trackLink($('edit-overlay'), () => track('editor_opened'));
   $('hide-capture-setup').addEventListener('click', () => showSetup(false));
   $('stop-demo').addEventListener('click', () => demo.stop());
   $('streamer-canvas').addEventListener('dblclick', () => showSetup(true));
@@ -302,7 +303,7 @@ if (capture) {
   });
   $('overlay-url').addEventListener('copy', () => track('link_copied', { method: 'manual' }));
   // Use normal page navigation: embedded popup windows can suppress the HID picker.
-  PageAnalytics.trackLink($('open-capture'), () => track('capture_opened'));
+  analytics.trackLink($('open-capture'), () => track('capture_opened'));
 }
 
 $('copy-overlay').addEventListener('click', async () => {

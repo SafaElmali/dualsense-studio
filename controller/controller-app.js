@@ -2,8 +2,7 @@ import { StickArrowControls } from './stick-arrow-controls.js';
 import { SupportView } from './support-view.js?v=support-2';
 import { supportUrls } from './support-config.js?v=coffee-only-1';
 import { AdaptiveTriggers } from './adaptive-triggers.js';
-import { analytics } from './analytics.js?v=controller-20s-v2';
-import { PageAnalytics } from './page-analytics.js';
+import { AppEvents } from './app-events.js';
 import { ControllerInput } from './input-state.js';
 import { InputCamera } from './input-camera.js';
 import { GyroInput } from './gyro-input.js?v=feature-events-1';
@@ -18,7 +17,8 @@ import { LeaderboardClient, LeaderboardView } from './leaderboard.js?v=controlle
 import { TargetPracticeView } from './target-practice-view.js?v=controller-20s-v2';
 
 const $ = id => document.getElementById(id);
-new PageAnalytics(document, { analytics, surface: 'studio' });
+const analytics = new AppEvents();
+analytics.trackPage(document, 'studio');
 new SupportView(document.querySelector('[data-support]'), { urls: supportUrls, onOpen: provider => analytics.featureAction('support', 'clicked', { surface: 'studio', provider }) });
 const canvas = $('controller-canvas');
 const help = $('help');
