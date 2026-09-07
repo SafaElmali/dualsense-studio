@@ -24,7 +24,7 @@ To see the overlay moving inside OBS without hardware, open the source's **Inter
 
 Two capture paths are documented on the setup page:
 
-- **OBS Browser Source:** paste the link, use 800 × 600 at 60 FPS, open Interact, click the controller and press a physical button to activate the Gamepad API. Transparent rendering uses the existing alpha-enabled Three.js renderer. This connection provides touchpad clicks, but not finger coordinates. For finger tracking, use the direct Chrome/Edge capture method. Check input after changing focus to your game: Gamepad access depends on the OBS/Chromium version, OS, and controller mapping.
+- **OBS Browser Source:** paste the link. Suggested starting settings are 800 × 600 at 60 FPS; adjust the dimensions and frame rate to suit your stream. Open Interact, click the controller and press a physical button to activate the Gamepad API. Transparent rendering uses the existing alpha-enabled Three.js renderer. This connection provides touchpad clicks, but not finger coordinates. For finger tracking, use the direct Chrome/Edge capture method. Check input after changing focus to your game: Gamepad access depends on the OBS/Chromium version, OS, and controller mapping.
 - **Chrome/Edge window capture:** choose green or blue, open the capture window, and select **Connect DualSense** for WebHID input. Then hide setup and use an OBS window capture with a matching Chroma Key filter. Keep that window open, on its controller tab, and unminimized. This input service intentionally has no focus gate. A USB data cable is recommended; Bluetooth needs extended reports. Close controller tools that hold exclusive device access if opening fails.
 
 ## Direct controller input
