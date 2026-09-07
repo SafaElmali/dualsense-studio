@@ -1,14 +1,20 @@
+import { StickArrowSettings } from './stick-arrow-settings.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
+import { ButtonHighlight } from './button-highlight.js?v=stick-feedback-1';
 
 export class DualSenseView {
   constructor(canvas, input) {
     this.canvas = canvas;
     this.input = input;
     this.controls = new Map();
-    this.pressedColor = new THREE.Color('#f4d878');
+    this.highlight = new ButtonHighlight(new THREE.Color());
+    this.highlightPreviewUntil = 0;
+    this.stickArrowSettings = { ...StickArrowSettings.defaults };
+    this.stickArrowColor = new THREE.Color();
+    this.stickArrowPreviewUntil = 0;
     this.touchSources = new Map();
     this.touchMarkers = [];
     this.touchpadHighlightUntil = 0;
@@ -64,7 +70,7 @@ export class DualSenseView {
 
   async load(onProgress) {
     const loader = new GLTFLoader();
-    const gltf = await loader.loadAsync('./controller/dualsense.glb', event => {
+    const gltf = await loader.loadAsync(new URL('./dualsense.glb', import.meta.url).href, event => {
       if (event.total) onProgress?.(Math.round(event.loaded / event.total * 100));
     });
     gltf.scene.updateMatrixWorld(true);
@@ -138,6 +144,7 @@ export class DualSenseView {
         child.material.userData.restColor = child.material.color.clone();
       }
     }
+    for (const side of ['left', 'right']) this.addStickArrow(side);
     const touchpad = this.controls.get('touchpad');
     this.touchSurfaces = [...touchpad.children];
     for (let i = 0; i < 2; i++) {
@@ -185,8 +192,42 @@ export class DualSenseView {
     const size = arrow ? .11 : .235;
     const orientation = new THREE.Euler().setFromQuaternion(cap.getWorldQuaternion(new THREE.Quaternion()));
     const decal = new THREE.Mesh(new DecalGeometry(cap, center, orientation, new THREE.Vector3(size,size,.3)), material);
+    decal.userData.highlightSurface = cap.material;
     decal.geometry.applyMatrix4(group.matrixWorld.clone().invert());
     decal.userData.control = id; decal.name = id + '-symbol'; group.add(decal);
+  }
+
+  addStickArrow(side) {
+    const group = this.controls.get(side + '-stick');
+    const cap = group.children.find(mesh => mesh.userData.part === 'head-and-shaft');
+    if (!cap) return;
+    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    for (const [index, [x, y]] of [[128, 38], [218, 124], [161, 124], [161, 218], [95, 218], [95, 124], [38, 124]].entries()) {
+      if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.fill();
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.center.set(.5, .5); texture.anisotropy = 4;
+    cap.geometry.computeBoundingBox();
+    const bounds = cap.geometry.boundingBox;
+    const center = bounds.getCenter(new THREE.Vector3()); center.z = bounds.max.z;
+    cap.updateWorldMatrix(true, false); cap.localToWorld(center);
+    const orientation = new THREE.Euler().setFromQuaternion(cap.getWorldQuaternion(new THREE.Quaternion()));
+    const material = new THREE.MeshBasicMaterial({
+      map: texture, transparent: true, opacity: 0, toneMapped: false,
+      depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4,
+    });
+    // Project onto the curved rubber cap so the arrow follows its tilt and
+    // remains occluded by the controller when viewed from behind.
+    const arrow = new THREE.Mesh(new DecalGeometry(cap, center, orientation, new THREE.Vector3(.70, .70, .22)), material);
+    arrow.geometry.applyMatrix4(group.matrixWorld.clone().invert());
+    arrow.name = side + '-direction'; arrow.userData.highlightSurface = cap.material;
+    arrow.raycast = () => {}; arrow.visible = false;
+    group.add(arrow); group.userData.directionArrow = arrow;
+    this.setStickArrows(this.stickArrowSettings);
   }
 
   resize() {
@@ -228,6 +269,23 @@ export class DualSenseView {
     const group = this.controls.get('touchpad');
     if (group) group.userData.glow = 1;
   }
+
+  setHighlight(settings) { this.highlight.set(settings); }
+
+  setStickArrows(values) {
+    this.stickArrowSettings = StickArrowSettings.normalize({ ...this.stickArrowSettings, ...values });
+    if (this.stickArrowSettings.arrowColor !== 'auto') this.stickArrowColor.set(this.stickArrowSettings.arrowColor);
+    for (const group of this.controls.values()) {
+      const arrow = group.userData.directionArrow;
+      // Scale the image within the projected cap surface; scaling the mesh
+      // itself would lift it off the curved rubber or sink it into the stick.
+      if (arrow) arrow.material.map.repeat.setScalar(.70 / (.46 * this.stickArrowSettings.arrowSize / 100));
+    }
+  }
+
+  previewStickArrows() { this.stickArrowPreviewUntil = performance.now() + 2200; }
+
+  previewHighlights() { this.highlightPreviewUntil = performance.now() + 2200; }
 
   setLightColor(color) {
     for (const material of this.lightMaterials) {
@@ -333,9 +391,21 @@ export class DualSenseView {
     for (const [id, group] of this.controls) {
       const rest = group.userData.rest;
       if (!rest) continue;
+      let stickMoving = false;
+      const arrowPreview = id.endsWith('-stick') && time < this.stickArrowPreviewUntil && this.stickArrowSettings.stickArrows === 'show';
       if (id.endsWith('-stick')) {
         const side = id.startsWith('left') ? 'left' : 'right';
         const axis = this.input.axis(side);
+        stickMoving = Math.hypot(axis.x, axis.y) > .08;
+        const arrow = group.userData.directionArrow;
+        if (arrow) {
+          // Gamepad Y points down; the unrotated arrow points up (+model Y).
+          // Hold the last direction while fading out instead of snapping up.
+          if (stickMoving) arrow.material.map.rotation = Math.atan2(-axis.x, -axis.y);
+          else if (arrowPreview) arrow.material.map.rotation = side === 'left' ? -Math.PI / 4 : Math.PI / 4;
+          arrow.material.opacity = THREE.MathUtils.lerp(arrow.material.opacity, (stickMoving || arrowPreview) && this.stickArrowSettings.stickArrows === 'show' ? this.highlight.opacity / 100 : 0, blend);
+          arrow.visible = arrow.material.opacity > .001;
+        }
         group.rotation.x += (axis.y * .29 - group.rotation.x) * blend;
         group.rotation.y += (axis.x * .29 - group.rotation.y) * blend;
         const targetZ = rest.z - this.input.button(side === 'left' ? 'l3' : 'r3') * .035;
@@ -348,18 +418,18 @@ export class DualSenseView {
         group.position.z += (rest.z - this.input.button(id) * travel - group.position.z) * blend;
       }
       const buttonId = id === 'left-stick' ? 'l3' : id === 'right-stick' ? 'r3' : id;
-      const pressed = this.input.button(buttonId) > .05 || (id === 'touchpad' && (this.touchSources.size > 0 || time < this.touchpadHighlightUntil));
+      const preview = time < this.highlightPreviewUntil && ['cross', 'touchpad', 'r2'].includes(id);
+      const pressed = stickMoving || arrowPreview || preview || this.input.button(buttonId) > .05 || (id === 'touchpad' && (this.touchSources.size > 0 || time < this.touchpadHighlightUntil));
       group.userData.glow = THREE.MathUtils.lerp(group.userData.glow || 0, pressed ? 1 : 0, blend);
       for (const child of group.children) {
         if (!child.userData.restEmissive) continue;
-        const glow = child.name.endsWith('-symbol') ? 0 : group.userData.glow;
-        const muted = id === 'mute' && this.muted;
-        child.material.color.copy(child.material.userData.restColor).lerp(this.pressedColor, glow * (id === 'touchpad' ? .8 : .4));
-        child.material.emissive.copy(child.userData.restEmissive);
-        if (muted) child.material.emissive.set('#dc6615');
-        child.material.emissive.lerp(this.pressedColor, glow);
-        child.material.emissiveIntensity = THREE.MathUtils.lerp(muted ? .7 : child.userData.restEmissiveIntensity, id === 'touchpad' ? .15 : .35, glow);
+        this.highlight.apply(child, group.userData.glow, {
+          symbol: child.name.endsWith('-symbol'), muted: id === 'mute' && this.muted,
+          surfaceColor: child.userData.highlightSurface?.color,
+        });
       }
+      const arrow = group.userData.directionArrow;
+      if (arrow) arrow.material.color.copy(this.stickArrowSettings.arrowColor === 'auto' ? this.highlight.symbolColor(arrow.userData.highlightSurface.color) : this.stickArrowColor);
     }
     for (const material of this.lightMaterials) material.emissiveIntensity = this.lights ? .7 : 0;
     this.renderTouches();
@@ -369,7 +439,7 @@ export class DualSenseView {
 
   dispose() {
     cancelAnimationFrame(this.frame); this.resizeObserver.disconnect();
-    this.scene.traverse(object => { if (object.isMesh) { object.geometry.dispose(); object.material.dispose(); } });
+    this.scene.traverse(object => { if (object.isMesh) { object.geometry.dispose(); if (object.material.map?.isCanvasTexture) object.material.map.dispose(); object.material.dispose(); } });
     this.environment.dispose(); this.renderer.dispose();
   }
 }

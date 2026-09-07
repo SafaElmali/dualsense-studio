@@ -19,4 +19,8 @@
 .site-faq details[open] summary::after{content:'−'}
 .site-faq summary:focus-visible{outline:2px solid var(--blue);outline-offset:5px;border-radius:3px}
 .site-faq .site-faq-answers p{padding:12px 24px 0 0;font-size:13px}
+.site-faq p.contact-note{margin-top:22px;font-size:14px;line-height:1.8}
+.contact-note a{color:#c0d2fa;text-decoration:underline;text-underline-offset:4px}
+.contact-note a:hover{color:#fff}
+.contact-note a:focus-visible{outline:2px solid var(--blue);outline-offset:4px;border-radius:2px}
 @media(max-width:650px){.site-info{margin-top:20px;padding-top:28px}.site-feature-grid{grid-template-columns:1fr}.site-feature-grid article{padding:22px}.site-faq{grid-template-columns:1fr;gap:14px;margin-top:30px;padding-top:28px}.site-info p:not(.site-eyebrow){font-size:13px}}

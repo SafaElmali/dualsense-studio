@@ -18,11 +18,11 @@ This is a technical and on-page audit, not a claim that Google has indexed the s
 | Site name | Visible branding emphasized PlayStation / Controller Studio. | Consistent DualSense Studio name in header, H1, metadata and WebSite data; independent-project attribution remains visible. |
 | Social sharing | No Open Graph or Twitter card tags. | Large-image metadata with absolute URLs, dimensions and alt descriptions. Added a 1200×630 PNG with an original vector illustration and retained its editable SVG source. |
 | Icons | SVG favicon only. | Kept SVG; added 48×48 PNG favicon and 180×180 Apple touch icon. |
-| Sitemap | `/sitemap.xml` returned 404. | The homepage-only release sitemap includes only the public homepage, with no query variants or invented modification dates. |
+| Sitemap | `/sitemap.xml` returned 404. | Sitemap includes the two indexable pages shipped by this build, with no query variants or invented modification dates. |
 | Robots | `/robots.txt` returned 404. This alone did not prevent indexing. | Explicit crawl permission, sitemap discovery, and a crawl exclusion for backend function endpoints. CSS, scripts and images remain crawlable. |
 | Structured data | None in the homepage HTML. | WebSite, WebPage and WebApplication JSON-LD describe the actual product. No fabricated reviews, ratings, offers or search action. |
 | Search-readable content | Tool descriptions were brief or inside dialogs. | Added static feature descriptions plus six useful FAQs. Content exists in the initial HTML without WebGL or JavaScript. |
-| Accuracy | Drift testing and repair can be confused. | Visible copy distinguishes diagnostics from repair/calibration, explains device permissions and browser requirements, and accurately describes the input methods available in the shipped version. |
+| Accuracy | Drift testing and repair can be confused. | Visible copy distinguishes diagnostics from repair/calibration, explains device permissions and browser requirements, and states controller-only target practice. |
 | Mobile and usability | Existing responsive layout. | Verified the changed page at desktop size, 390×844 and 320×740: no horizontal overflow, stacked feature cards, readable FAQ expansion, and controller view still renders. Added keyboard skip link and noscript guidance. |
 | Missing pages | A nonexistent public path correctly returned 404. | Added a branded 404 page with noindex and an absolute home link. Netlify serves `404.html` for missing files; no catch-all 200 rewrite was added. |
 | Build and local links | Build previously shipped only app pages and controller files. | Build now includes robots, sitemap, 404 and sharing assets. Automated checks validate their actual publish output and local references. |
@@ -55,6 +55,7 @@ These six SEO checks passed; 14 targeted checks passed including existing analyt
 
 ## Release and owner follow-up
 
+1. Homepage SEO is live. The release was isolated from `origin/main` in `safaelmali/seo-release`; it excludes unpublished OBS work, controller-only gameplay and unrelated analytics changes. The public sitemap contains only `/`. The full local build still includes unreleased work; do not push the whole local branch accidentally.
 3. In Google Search Console, verify the `dualsense.studio` domain property, submit `https://dualsense.studio/sitemap.xml`, then inspect the homepage and request indexing. Add a DNS verification record only if Search Console supplies one; no verification tokens were invented or DNS settings changed here.
 4. Inspect the rendered HTML and selected canonical in Search Console after Google crawls. Structured data can also be checked with Google's Rich Results Test / Schema Markup Validator. Syntax checks here do not establish Google feature eligibility.
 5. Test a shared link on the intended social platform after deployment. Old previews may remain cached even when metadata is correct.

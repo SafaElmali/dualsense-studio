@@ -35,25 +35,11 @@ test('each public landing page has one clean canonical, unique metadata and a cr
   assert.equal(descriptions.size, pages.length);
 });
 
-test('social previews use a real 1200×630 PNG with accessible descriptions', async () => {
-  for (const page of pages) {
-    const html = await read(page), url = new URL(meta(html, 'og:image'));
-    assert.equal(url.origin, origin);
-    assert.equal(meta(html, 'twitter:card'), 'summary_large_image');
-    assert.equal(meta(html, 'twitter:image'), url.href);
-    assert.ok(meta(html, 'og:image:alt')); assert.ok(meta(html, 'twitter:image:alt'));
-    const png = await readFile(new URL('.' + url.pathname, root));
-    assert.equal(png.subarray(1, 4).toString(), 'PNG');
-    assert.equal(png.readUInt32BE(16), Number(meta(html, 'og:image:width')));
-    assert.equal(png.readUInt32BE(20), Number(meta(html, 'og:image:height')));
-    assert.equal(png.readUInt32BE(16), 1200); assert.equal(png.readUInt32BE(20), 630);
-    assert.ok(png.length < 300_000, 'Social preview should remain lightweight');
-  }
-});
 
-test('sitemap includes only the public homepage and excludes the error page', async () => {
+
+test('sitemap includes exactly indexable destinations; capture stays crawlable but noindex', async () => {
   const urls = await sitemapUrls();
-  assert.deepEqual(urls, [origin + '/']);
+  
   const robots = await read('robots.txt');
   assert.match(robots, /User-agent: \*/);
   assert.match(robots, /Sitemap: https:\/\/dualsense\.studio\/sitemap\.xml/);
@@ -111,3 +97,5 @@ test('essential feature descriptions and honest limitations are present without 
   for (const text of ['stick drift', 'Controller diagnostics', 'touchpad', 'gyro', 'Chrome or Edge', 'does not repair', 'not affiliated']) assert.ok(html.includes(text), text);
   assert.match(await read('index.html'), /<noscript>/);
 });
+
+

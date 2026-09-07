@@ -1,5 +1,5 @@
 export class AppearanceView {
-  constructor({ onColor = () => {}, onAction = () => {} } = {}) {
+  constructor({ onColor = () => {}, onOpacity = () => {}, onPreview = () => {}, onAction = () => {} } = {}) {
     this.onColor = onColor; this.onAction = onAction;
     this.root = document.getElementById('appearance-tool');
     this.panel = document.getElementById('appearance-panel');
@@ -37,11 +37,24 @@ export class AppearanceView {
       tab.addEventListener('keydown', event => {
         if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
-        const next = event.key === 'Home' ? tabs[0] : event.key === 'End' ? tabs.at(-1) : tabs.find(item => item !== tab);
+        const next = event.key === 'Home' ? tabs[0] : event.key === 'End' ? tabs.at(-1) : tabs[(tabs.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
         this.selectTab(next.dataset.colorTab); next.focus();
       });
     }
-    for (const kind of ['light', 'body']) {
+    const opacity = document.getElementById('appearance-highlight-opacity');
+    const setOpacity = value => {
+      opacity.value = value;
+      document.getElementById('appearance-highlight-opacity-value').value = `${opacity.value}%`;
+      onOpacity(Number(opacity.value));
+    };
+    opacity.addEventListener('input', () => setOpacity(opacity.value));
+    opacity.addEventListener('change', () => this.onAction('highlight', 'opacity_changed', { opacity: Number(opacity.value) }));
+    document.getElementById('appearance-highlight-preview').addEventListener('click', () => {
+      if (window.matchMedia('(max-width:650px)').matches) this.close(true);
+      onPreview();
+      this.onAction('highlight', 'previewed');
+    });
+    for (const kind of ['light', 'body', 'highlight']) {
       const input = this.input(kind), hex = document.getElementById(`appearance-${kind}-hex`);
       input.addEventListener('input', () => this.setColor(kind, input.value));
       input.addEventListener('change', () => this.onAction(kind, 'changed', { method: 'picker' }));
@@ -64,7 +77,9 @@ export class AppearanceView {
         this.setColor(kind, button.dataset.color); this.onAction(kind, 'changed', { method: 'preset' });
       });
       this.root.querySelector(`[data-color-reset="${kind}"]`).addEventListener('click', () => {
-        this.setColor(kind, kind === 'light' ? '#0046ff' : '#e9eaf0'); this.onAction(kind, 'reset');
+        this.setColor(kind, { light: '#0046ff', body: '#e9eaf0', highlight: '#ffbf47' }[kind]);
+        if (kind === 'highlight') setOpacity(100);
+        this.onAction(kind, 'reset');
       });
       this.setColor(kind, input.value, false);
     }

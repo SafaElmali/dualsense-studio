@@ -38,13 +38,14 @@ test('gyro integrates sensor time across wrap, drops stale gaps, and pauses with
   gyro.attach(null); assert.equal(pad.listeners.size, 0); assert.equal(gyro.enabled, false);
 });
 test('gyro recenter measures stationary bias, rejects movement and cancels on blur', async () => {
-  let now = 0; const motions = [], statuses = [], gyro = new GyroInput(m => motions.push(m), s => statuses.push(s), () => now), pad = device(); gyro.attach(pad); await gyro.enable();
+  let now = 0; const motions = [], statuses = [], events = [], gyro = new GyroInput(m => motions.push(m), s => statuses.push(s), () => now, (feature, action) => events.push(action)), pad = device(); gyro.attach(pad); await gyro.enable();
   gyro.recenter();
   for (let i = 0; i <= 40; i++) { now = i * 40; pad.emit(packet(1, [16, -16, 0], i * 120000)); }
   assert.deepEqual(gyro.bias, [1, -1, 0]); assert.equal(gyro.measurement, null);
   pad.emit(packet(1, [16, -16, 0], 4920000)); pad.emit(packet(1, [16, -16, 0], 5040000)); assert.equal(motions.at(-1).pitch, 0);
   gyro.recenter(); pad.emit(packet(1, [1600, 0, 0])); assert.equal(gyro.measurement, null); assert.match(statuses.at(-1), /moved/);
   gyro.recenter(); gyro.setPaused(true); assert.equal(gyro.measurement, null);
+  assert.deepEqual(events, ['recenter_started', 'recentered', 'recenter_started', 'recenter_failed', 'recenter_started', 'recenter_cancelled']);
 });
 test('late calibration cannot re-enable an Off or disconnected gyro', async () => {
   let resolve; const pad = device(() => new Promise(done => { resolve = done; })), gyro = new GyroInput(); gyro.attach(pad);
@@ -54,8 +55,10 @@ test('late calibration cannot re-enable an Off or disconnected gyro', async () =
   assert.equal(await second, false); assert.equal(pad.listeners.size, 0);
 });
 test('motion aiming moves playing rounds only and remains bounded', () => {
-  const game = new TargetPractice(), view = { game }; game.start();
+  const game = new TargetPractice(), view = { game, onAction() {}, controller: { connected: true } }; game.start();
   TargetPracticeView.prototype.motion.call(view, { pitch: 10, yaw: -20, dt: .05 }); assert.deepEqual(game.aim, { x: 512, y: 274 });
+  view.controller.connected = false; TargetPracticeView.prototype.motion.call(view, { pitch: 20, yaw: 20, dt: 1 }); assert.deepEqual(game.aim, { x: 512, y: 274 });
+  view.controller.connected = true;
   game.pause(); TargetPracticeView.prototype.motion.call(view, { pitch: 20, yaw: 20, dt: 1 }); assert.deepEqual(game.aim, { x: 512, y: 274 });
   game.resume(); TargetPracticeView.prototype.motion.call(view, { pitch: 2000, yaw: -2000, dt: .1 }); assert.deepEqual(game.aim, { x: 980, y: 30 });
 });

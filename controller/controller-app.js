@@ -1,21 +1,24 @@
-import { AdaptiveTriggers } from './adaptive-triggers.js';
+import { StickArrowControls } from './stick-arrow-controls.js';
 import { SupportView } from './support-view.js?v=support-2';
-import { supportUrls } from './support-config.js?v=support-2';
-import { analytics } from './analytics.js?v=support-2';
+import { supportUrls } from './support-config.js?v=coffee-only-1';
+import { AdaptiveTriggers } from './adaptive-triggers.js';
+import { analytics } from './analytics.js?v=contact-1';
+import { PageAnalytics } from './page-analytics.js';
 import { ControllerInput } from './input-state.js';
 import { InputCamera } from './input-camera.js';
-import { GyroInput } from './gyro-input.js';
+import { GyroInput } from './gyro-input.js?v=feature-events-1';
 import { BatteryInput } from './battery-input.js';
 import { BatteryView } from './battery-view.js';
-import { AppearanceView } from './appearance-view.js';
+import { AppearanceView } from './appearance-view.js?v=highlights-2';
 import { TouchpadInput } from './touchpad-input.js';
-import { DualSenseView } from './controller-view.js';
-import { TouchDrawingView } from './touch-drawing-view.js';
+import { DualSenseView } from './controller-view.js?v=arrow-controls-2';
+import { TouchDrawingView } from './touch-drawing-view.js?v=feature-events-1';
 import { DiagnosticsView } from './diagnostics-view.js';
-import { LeaderboardClient, LeaderboardView } from './leaderboard.js';
-import { TargetPracticeView } from './target-practice-view.js';
+import { LeaderboardClient, LeaderboardView } from './leaderboard.js?v=feature-events-1';
+import { TargetPracticeView } from './target-practice-view.js?v=feature-events-1';
 
 const $ = id => document.getElementById(id);
+new PageAnalytics(document, { analytics, surface: 'studio' });
 new SupportView(document.querySelector('[data-support]'), { urls: supportUrls, onOpen: provider => analytics.featureAction('support', 'clicked', { surface: 'studio', provider }) });
 const canvas = $('controller-canvas');
 const help = $('help');
@@ -38,7 +41,7 @@ function setAutoView(enabled) {
   inputCamera.setEnabled(enabled);
   $('auto-view').setAttribute('aria-pressed', String(enabled));
 }
-$('auto-view').addEventListener('click', () => setAutoView(!inputCamera.enabled));
+$('auto-view').addEventListener('click', () => { setAutoView(!inputCamera.enabled); analytics.featureAction('viewer', 'auto_changed', { enabled: inputCamera.enabled }); });
 
 const leaderboardClient = new LeaderboardClient();
 const triggerStatus = $('trigger-effect-status');
@@ -52,13 +55,29 @@ const appearance = new AppearanceView({
         clearTimeout(lightColorTimer);
         lightColorTimer = setTimeout(() => { if (triggers.lightColor !== null) void syncLightColor(); }, 80);
       }
+    } else if (kind === 'highlight') {
+      view?.setHighlight({ color }); view?.previewHighlights();
     } else {
       view?.setBodyColor(color);
       document.querySelectorAll('[data-finish]').forEach(button => button.setAttribute('aria-pressed', 'false'));
       $('finish-label').textContent = 'Custom';
     }
   },
+  onOpacity: opacity => { view?.setHighlight({ opacity }); view?.previewHighlights(); },
+  onPreview: () => view?.previewHighlights(),
   onAction: (kind, action, properties) => analytics.featureAction('appearance', action, { ...properties, target: kind }),
+});
+const arrowControls = new StickArrowControls($('appearance-arrows'), {
+  onInput: values => { view?.setStickArrows(values); if (values.stickArrows === 'show') view?.previewStickArrows(); },
+  onChange: (values, setting) => {
+    view?.setStickArrows(values);
+    analytics.featureAction('appearance', 'arrows_changed', { setting, enabled: values.stickArrows === 'show', size: values.arrowSize, color_mode: values.arrowColor === 'auto' ? 'auto' : 'custom' });
+  },
+  onPreview: () => {
+    appearance.close(true);
+    canvas.scrollIntoView({ block: 'center', behavior: 'instant' });
+    view?.previewStickArrows(); analytics.featureAction('appearance', 'arrows_previewed');
+  },
 });
 function renderLightSync() {
   const syncing = triggers.lightColor !== null;
@@ -178,7 +197,7 @@ const gyro = new GyroInput(motion => {
   if (performance.now() - gyroUiTime > 100) {
     gyroUiTime = performance.now(); $('gyro-values').textContent = `Pitch ${pitch.toFixed(1)}°/s · Yaw ${yaw.toFixed(1)}°/s · Roll ${roll.toFixed(1)}°/s${gyro.scale ? '' : ' (approx.)'}`;
   }
-}, message => sensorStatus('gyro', message));
+}, message => sensorStatus('gyro', message), () => performance.now(), (feature, action) => analytics.featureAction(feature, action));
 function renderGyro() {
   renderBattery();
   renderLightSync();
@@ -195,17 +214,18 @@ function pauseGyro() { gyro.setPaused(document.hidden || !document.hasFocus() ||
 async function enableGyro() {
   if (triggerBusy || range?.connecting) return;
   triggerBusy = true; renderGyro();
+  analytics.featureAction('gyro', 'connect_requested');
   try {
     await triggers.connect({ enableEffects: false });
     if (await gyro.enable()) { pauseGyro(); analytics.featureAction('gyro', 'enabled'); }
-    else if (!triggers.device) sensorStatus('gyro', 'No controller selected. Click the gyro icon to try again.');
-  } catch (error) { sensorStatus('gyro', error.name === 'NotAllowedError' ? 'Controller access was not granted. Click the gyro icon to try again.' : error.message); }
+    else if (!triggers.device) { sensorStatus('gyro', 'No controller selected. Click the gyro icon to try again.'); analytics.featureAction('gyro', 'connect_cancelled'); }
+  } catch (error) { analytics.featureAction('gyro', error.name === 'NotAllowedError' ? 'connect_cancelled' : 'connect_failed'); sensorStatus('gyro', error.name === 'NotAllowedError' ? 'Controller access was not granted. Click the gyro icon to try again.' : error.message); }
   finally { triggerBusy = false; renderGyro(); $('enable-triggers').disabled = triggers.active || !navigator.hid; renderTouchpad(); }
 }
 function disableGyro() { gyro.setEnabled(false); renderGyro(); sensorStatus('gyro', 'Gyro off. Stick and mouse controls still work.'); analytics.featureAction('gyro', 'disabled'); }
 function recenterGyro() {
-  range?.pause();
-  if (gyro.recenter()) { if (range?.isOpen) range.game.setAim(500, 280); analytics.featureAction('gyro', 'recentered'); }
+  range?.pause('gyro_recenter');
+  if (gyro.recenter() && range?.isOpen) range.game.setAim(500, 280);
 }
 $('enable-gyro').addEventListener('click', () => gyro.enabled ? disableGyro() : enableGyro());
 $('range-gyro').addEventListener('click', () => gyro.enabled ? disableGyro() : enableGyro());
@@ -281,7 +301,7 @@ $('trigger-share').addEventListener('click', async () => {
   $('trigger-link').value = link; $('trigger-link-wrap').hidden = false;
   analytics.featureAction('trigger_presets', 'link_created', properties);
   try { await navigator.clipboard.writeText(link); analytics.featureAction('trigger_presets', 'link_copied', properties); $('trigger-share-status').textContent = 'Preset link copied. Opening it keeps trigger effects off.'; }
-  catch { $('trigger-link').focus(); $('trigger-link').select(); $('trigger-share-status').textContent = 'Copy the selected link to share your preset.'; }
+  catch { analytics.featureAction('trigger_presets', 'copy_failed', properties); $('trigger-link').focus(); $('trigger-link').select(); $('trigger-share-status').textContent = 'Copy the selected link to share your preset.'; }
 });
 describeTriggerMode();
 try {
@@ -299,13 +319,16 @@ $('trigger-mode').addEventListener('change', async event => {
   catch (error) { triggerStatus.textContent = error.message; }
 });
 $('enable-triggers').addEventListener('click', async () => {
+  analytics.featureAction('trigger_effects', 'connect_requested', { surface: 'studio' });
   triggerBusy = true; $('enable-triggers').disabled = true;
   $('enable-touchpad').disabled = true;
   try {
     await triggers.connect();
     if (document.hidden) await triggers.pause();
-    if (triggers.active) analytics.once('controller_trigger_effects_enabled');
+    if (triggers.active) analytics.featureAction('trigger_effects', 'enabled', { surface: 'studio' });
+    else if (!triggers.device) analytics.featureAction('trigger_effects', 'connect_cancelled', { surface: 'studio' });
   } catch (error) {
+    analytics.featureAction('trigger_effects', error.name === 'NotAllowedError' ? 'connect_cancelled' : 'connect_failed', { surface: 'studio' });
     triggerStatus.textContent = error.name === 'NotAllowedError' ? 'Controller access was not granted. Choose Enable to try again.' : error.message;
   } finally {
     triggerBusy = false; $('enable-triggers').disabled = triggers.active || !navigator.hid;
@@ -317,19 +340,21 @@ $('enable-touchpad').addEventListener('click', async () => {
   view?.highlightTouchpad();
   if (view?.ready) analytics.featureAction('touchpad', 'highlighted', { source: 'toolbar' });
   if (touchpad.device && touchpad.enabled) { touchpad.setEnabled(false); analytics.featureAction('touchpad', 'disabled'); return; }
+  analytics.featureAction('touchpad', 'connect_requested');
   triggerBusy = true; renderTouchpad(); renderGyro(); $('enable-triggers').disabled = true;
   try {
     await triggers.connect({ enableEffects: false });
     if (triggers.device) { touchpad.setEnabled(true); analytics.featureAction('touchpad', 'enabled'); }
-    else sensorStatus('touchpad', 'No controller selected. Click the touchpad icon to try again.');
+    else { sensorStatus('touchpad', 'No controller selected. Click the touchpad icon to try again.'); analytics.featureAction('touchpad', 'connect_cancelled'); }
   } catch (error) {
+    analytics.featureAction('touchpad', error.name === 'NotAllowedError' ? 'connect_cancelled' : 'connect_failed');
     sensorStatus('touchpad', error.name === 'NotAllowedError' ? 'Controller access was not granted. Click the touchpad icon to try again.' : error.message);
   } finally {
     triggerBusy = false; renderTouchpad(); renderGyro();
     $('enable-triggers').disabled = triggers.active || !navigator.hid;
   }
 });
-$('disable-triggers').addEventListener('click', stopTriggers);
+$('disable-triggers').addEventListener('click', () => { stopTriggers(); analytics.featureAction('trigger_effects', 'disabled', { surface: 'studio' }); });
 window.addEventListener('blur', () => { if (triggers.device) stopTriggers(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopTriggers(); });
 window.addEventListener('pagehide', () => { void triggers.disconnect().catch(() => {}); });
@@ -354,7 +379,6 @@ function tone(id) {
 }
 
 const input = new ControllerInput(event => {
-  range?.handleInput(event);
   inputCamera.observe(event);
   if (event.type === 'axis') {
     if (Math.hypot(event.x, event.y) > .1) analytics.interact('stick');
@@ -481,7 +505,7 @@ canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();releas
 
 for (const button of document.querySelectorAll('[data-view]')) button.addEventListener('click',()=>{
   if (gyro.enabled) disableGyro();
-  if(!view?.ready)return;setAutoView(false);releaseAll();view.setView(button.dataset.view);analytics.interact('view');
+  if(!view?.ready)return;setAutoView(false);releaseAll();view.setView(button.dataset.view);analytics.interact('view');analytics.featureAction('viewer','camera_selected',{camera:button.dataset.view});
   document.querySelectorAll('[data-view]').forEach(el=>el.setAttribute('aria-pressed',String(el===button)));
 });
 for (const button of document.querySelectorAll('[data-finish]')) button.addEventListener('click',()=>{
@@ -491,17 +515,18 @@ for (const button of document.querySelectorAll('[data-finish]')) button.addEvent
   $('finish-label').textContent=name;$('announcement').textContent=name+' selected';
 });
 $('sound').addEventListener('click',()=>{
-  analytics.interact('sound');sound=!sound;$('sound').setAttribute('aria-pressed',String(sound));$('sound').setAttribute('aria-label',sound?'Disable button sounds':'Enable button sounds');
+  analytics.interact('sound');sound=!sound;analytics.featureAction('viewer','sound_changed',{enabled:sound});$('sound').setAttribute('aria-pressed',String(sound));$('sound').setAttribute('aria-label',sound?'Disable button sounds':'Enable button sounds');
   $('sound-lines').setAttribute('d',sound?'M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14':'m16 9 5 6m0-6-5 6');if(sound)tone('cross');
 });
 $('reset').addEventListener('click',()=>{
+  analytics.featureAction('viewer', 'reset');
   if (gyro.enabled) disableGyro();
   stopTriggers();
   releaseAll();if(view){view.lights=true;view.muted=false;view.setView('front');}
   inputCamera.reset();$('auto-view').setAttribute('aria-pressed','true');
   status('Controller reset',false);$('announcement').textContent='Controller reset. Sticks centered and front view restored.';
 });
-$('show-help').addEventListener('click',()=>{stopTriggers();touchpad.setPaused(true);releaseAll();help.showModal();});
+$('show-help').addEventListener('click',()=>{stopTriggers();touchpad.setPaused(true);releaseAll();help.showModal();analytics.featureAction('viewer','controls_opened');});
 help.addEventListener('close', () => touchpad.setPaused(document.hidden || !document.hasFocus()));
 $('close-help').addEventListener('click',()=>help.close());
 help.addEventListener('click',event=>{if(event.target!==help)return;const r=help.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)help.close();});
@@ -584,11 +609,11 @@ function addAccessibleControls(){
     if(point){button.style.left=point.x+'px';button.style.top=point.y+'px';}
   };
 }
-function showError(message){stopTriggers();$('loading').hidden=true;$('load-error').hidden=false;$('error-message').textContent=message;}
+function showError(message){analytics.featureAction('viewer','model_failed');stopTriggers();$('loading').hidden=true;$('load-error').hidden=false;$('error-message').textContent=message;}
 range = new TargetPracticeView({
   leaderboardClient,
+  getPad: () => gamepads()[gamepadIndex] || gamepads().find(Boolean),
   onAction: (feature, action, properties) => analytics.featureAction(feature, action, properties),
-  input,
   onOpen: () => { releaseAll(); touchpad.setPaused(true); if (view) view.suspended = true; },
   onClose: () => { if (view) view.suspended = false; touchpad.setPaused(document.hidden || !document.hasFocus()); },
   onWeapon: mode => {
@@ -599,7 +624,9 @@ range = new TargetPracticeView({
   onEnableEffects: async () => {
     if (!navigator.hid) throw new Error('Use desktop Chrome or Edge for adaptive triggers. You can still play here.');
     await triggers.connect();
+    const enabled = triggers.active;
     if (document.hidden || !range.isOpen) await triggers.pause();
+    return enabled;
   },
   onStopEffects: stopTriggers,
   effectsActive: () => triggers.active,
@@ -614,6 +641,7 @@ drawing = new TouchDrawingView({
     await triggers.connect({ enableEffects: false });
     if (triggers.device) touchpad.setEnabled(true);
     else drawing.message('No controller selected. Try enabling the touchpad again.');
+    return !!triggers.device;
   },
 });
 diagnostics = new DiagnosticsView({
@@ -626,13 +654,13 @@ diagnostics = new DiagnosticsView({
 leaderboard = new LeaderboardView({
   client: leaderboardClient,
   onAction: (feature, action, properties) => analytics.featureAction(feature, action, properties),
-  onOpen: () => { range?.pause(); stopTriggers(); releaseAll(); touchpad.setPaused(true); if (view) view.suspended = true; },
+  onOpen: () => { range?.pause('leaderboard'); stopTriggers(); releaseAll(); touchpad.setPaused(true); if (view) view.suspended = true; },
   onClose: () => { if (view) view.suspended = range?.isOpen; touchpad.setPaused(document.hidden || !document.hasFocus() || range?.isOpen); },
 });
 $('range-leaderboard').addEventListener('click', () => leaderboard.open());
 $('open-drawing').addEventListener('click', () => drawing.open());
 $('open-diagnostics').addEventListener('click', () => diagnostics.open());
-$('open-range').addEventListener('click', () => { range.open(triggerMode.value); analytics.interact('target_practice'); });
+$('open-range').addEventListener('click', () => range.open(triggerMode.value));
 // Battery access must not wait for the 3D model, or depend on touchpad tracking.
 discoverPad();
 void restoreControllerConnection();
@@ -640,6 +668,7 @@ try{
   view=new DualSenseView(canvas,input);
   await view.load(percent=>{$('load-progress').textContent=percent+'%';});
   view.setLightColor(appearance.input('light').value);
+  view.setStickArrows(arrowControls.read());
   $('open-appearance').disabled = false;
   analytics.once('controller_loaded');
   view.setView('front');addAccessibleControls();$('loading').hidden=true;$('viewer').setAttribute('aria-busy','false');

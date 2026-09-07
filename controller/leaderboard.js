@@ -23,7 +23,7 @@ export class LeaderboardView {
     this.client = client; this.onOpen = onOpen; this.onClose = onClose; this.onAction = onAction;
     this.dialog = document.getElementById('leaderboard'); this.request = 0;
     document.getElementById('leaderboard-close').addEventListener('click', () => this.dialog.close());
-    document.getElementById('leaderboard-refresh').addEventListener('click', () => this.load());
+    document.getElementById('leaderboard-refresh').addEventListener('click', () => { this.onAction('leaderboard', 'refreshed'); void this.load(); });
     this.dialog.addEventListener('close', () => { this.request++; this.onClose(); });
   }
   get isOpen() { return this.dialog.open; }
@@ -71,7 +71,7 @@ export class LeaderboardView {
     if (entry) {
       const rank = this.element('button', 'leaderboard-personal-rank', `#${entry.rank}`);
       rank.setAttribute('aria-label', `Find your rank, number ${entry.rank}`);
-      rank.addEventListener('click', () => this.dialog.querySelector('.your-score')?.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      rank.addEventListener('click', () => { this.onAction('leaderboard', 'personal_rank_clicked'); this.dialog.querySelector('.your-score')?.scrollIntoView({ block: 'center', behavior: 'instant' }); });
       const title = this.element('strong', '', 'Your best '); title.append(this.element('span', '', `${entry.score.toLocaleString()} pts`));
       copy.append(title, this.element('small', '', `${entry.accuracy}% accuracy · ${this.weapons(entry)}`)); personal.append(rank);
     } else {
@@ -106,10 +106,11 @@ export class LeaderboardView {
       } else {
         this.placeholder('The first spot is yours to take.', 'Finish a 20-second round, submit your score, and set the pace.');
       }
+      this.onAction('leaderboard', 'loaded');
       const mine = entries.find(entry => entry.mine); this.personal(mine);
       status.textContent = entries.length ? `${entries.length} ranked scores loaded.${mine ? ` Your best score is number ${mine.rank}.` : ''}` : 'The board is waiting for its first score. Finish a round and claim your place.';
     } catch (error) {
-      if (request === this.request && this.isOpen) { this.placeholder('Scores are taking a breather.', error.message); status.textContent = error.message; }
+      if (request === this.request && this.isOpen) { this.onAction('leaderboard', 'load_failed'); this.placeholder('Scores are taking a breather.', error.message); status.textContent = error.message; }
     } finally { if (request === this.request) { refresh.disabled = false; content.setAttribute('aria-busy', 'false'); } }
   }
 }

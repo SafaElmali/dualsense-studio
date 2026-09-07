@@ -5,15 +5,15 @@
 .studio-support-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .studio-support h2{font:600 20px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:-.4px;margin:0 0 7px}
 .studio-support p{font:13px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#9caea4;margin:0;max-width:510px}
-.studio-support-action{display:flex;flex-shrink:0;flex-direction:column;align-items:center;gap:8px}
+.studio-support-action{display:flex;flex-shrink:0;flex-direction:column;align-items:center;gap:17px;width:212px;max-width:100%}
 .studio-support-action a{display:inline-flex;align-items:center;justify-content:center;gap:16px;border:1px solid #c4e5cf52;border-radius:9px;padding:12px 18px;color:#d5eadd;background:#b9dbc613;text-decoration:none;font:600 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;white-space:nowrap}
 .studio-support-action a:hover{background:#b9dbc62b;border-color:#c4e5cf99;color:#f0fff5}
 .studio-support-action a:focus-visible{outline:2px solid #c4e5cf;outline-offset:4px}
 .studio-support-action small{color:#93a49a;font:11px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .studio-support-option{display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;text-align:center}
 .studio-support-option[hidden]{display:none}
-.studio-support-action .studio-support-tip{background:#f4d878;border-color:#f4d878;color:#20251d}
-.studio-support-action .studio-support-tip:hover{background:#ffe69c;border-color:#ffe69c;color:#121810}
-.studio-support-action .studio-support-monthly{padding:7px 0;border-color:transparent;background:transparent;color:#b5c9bd;font-size:12px;font-weight:500;gap:9px}
-.studio-support-action .studio-support-monthly:hover{background:transparent;border-color:transparent;color:#f0fff5;text-decoration:underline;text-underline-offset:4px}
-@media(max-width:720px){.studio-support{flex-direction:column;align-items:stretch;gap:22px;padding:23px}.studio-support-copy{gap:14px;align-items:flex-start}.studio-support h2{font-size:19px}.studio-support-action a{width:100%}.studio-support-action{align-items:stretch;text-align:center}}
+.studio-support-action .studio-support-tip{display:flex;padding:0;border:0;background:#ffdd00;border-radius:9px;transition:box-shadow .15s ease}
+.studio-support-tip img{display:block;width:100%;height:auto}
+.studio-support-action .studio-support-tip:hover{background:#ffdd00;box-shadow:0 0 0 3px #ffdd0026}
+.studio-support-action .studio-support-tip:focus-visible{outline-color:#ffdd00}
+@media(max-width:720px){.studio-support{flex-direction:column;align-items:stretch;gap:22px;padding:23px}.studio-support-copy{gap:14px;align-items:flex-start}.studio-support h2{font-size:19px}.studio-support-action a{width:100%}.studio-support-action{align-self:center;align-items:stretch;text-align:center}}
