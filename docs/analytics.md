@@ -70,3 +70,7 @@ To verify in PostHog, open **Activity → Events**, filter event names by the pr
 ## Content blockers and startup
 
 Controller, Streamer, and OBS capture entry points use `AppEvents` to load analytics and page tracking asynchronously. Neither optional import blocks rendering, inputs, settings, or links. Original analytics URLs remain unchanged; a blocked module is not retried through a different path or proxy. Reporting becomes a no-op on failure, with at most 100 early events buffered while the module loads. Shared showcase rendering has no required analytics import.
+
+## Community gallery and marble maze
+
+`community_gallery` records page opens, look previews and applications, link copies, loads and load failures, sharing form opens, and submission requests/results. `marble_maze` records opens, starts, pauses, resumes, restarts, completions, input-mode changes, connection requests, and setting a level position. All these events have empty custom payloads: no creator names, look names, settings, motion samples, times, or device identifiers are sent. Page loads, asynchronous gallery outcomes, maze completion, and automatic pauses do not extend active time. Local analytics remain off unless explicitly enabled for testing.

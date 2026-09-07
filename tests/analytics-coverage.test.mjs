@@ -18,8 +18,9 @@ test('every named feature event in the app is accepted by the analytics filter',
       assert.ok(Object.hasOwn(ControllerAnalytics.featureActions[feature] || {}, action), `${file}: ${feature}.${action} is silently dropped`);
       checked++;
     }
-    if (file === 'streamer-app.js') for (const [, action] of source.matchAll(/\btrack\('([a-z_]+)'/g)) {
-      assert.ok(Object.hasOwn(ControllerAnalytics.featureActions.streamer, action), `streamer.${action} is silently dropped`);
+    const trackedFeature = { 'streamer-app.js': 'streamer', 'community-gallery.js': 'community_gallery', 'marble-maze-app.js': 'marble_maze' }[file];
+    if (trackedFeature) for (const [, action] of source.matchAll(/\btrack\('([a-z_]+)'/g)) {
+      assert.ok(Object.hasOwn(ControllerAnalytics.featureActions[trackedFeature], action), `${trackedFeature}.${action} is silently dropped`);
       checked++;
     }
   }

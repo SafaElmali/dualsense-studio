@@ -38,6 +38,10 @@ Tests cover simultaneous input sources, trigger pressure, circular stick travel,
 - `controller/dualsense.glb` — model with separate interactive parts and embedded textures.
 - `controller/vendor/three/` — Three.js 0.180.0 and the required add-ons.
 - `streamer.html` and `overlay.html` — Streamer settings and the OBS capture page.
+- `gallery.html` — public community looks with a shared 3D preview and portable editor links.
+- `maze.html` — three-course marble maze with local personal times.
+- `controller/marble-maze.js` — fixed-step physics, course geometry, and gravity-based tilt.
+- `server/community-gallery-*.mjs` — community submission storage and public HTTP contract.
 - `netlify/functions/` — leaderboard API and storage logic.
 - `scripts/build.mjs` — static publish-folder generation.
 - `tests/` — input, hardware protocol, analytics, leaderboard, and page checks.

@@ -1,3 +1,4 @@
+import { CommunityShareView } from './community-share-view.js';
 import { StickArrowControls } from './stick-arrow-controls.js';
 import { SupportView } from './support-view.js?v=support-2';
 import { supportUrls } from './support-config.js?v=coffee-only-1';
@@ -28,6 +29,7 @@ const track = (action, properties = {}) => analytics.featureAction('streamer', a
 const form = $('streamer-settings');
 let arrowControls, builder;
 let settings = StreamerSettings.read(location.search);
+if (!capture) new CommunityShareView(document, { getSettings: () => settings, onAction: action => analytics.featureAction('community_gallery', action) });
 let view, frame, disposed = false;
 const inputCamera = new InputCamera(angle => {
   if (view?.ready) view.setView(angle, { resetZoom: false });

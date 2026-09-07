@@ -8,6 +8,7 @@
     "test": "npm run build && node --test tests/*.test.mjs",
     "build": "node scripts/build.mjs",
     "test:seo": "npm run build && node --test tests/seo.test.mjs",
+    "gallery:review": "node scripts/review-gallery.mjs",
     "streamers:review": "node scripts/review-streamers.mjs"
   },
   "engines": {

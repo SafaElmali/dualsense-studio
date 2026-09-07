@@ -79,3 +79,21 @@ Approval attempts a profile fetch when the matching platform credentials are in 
 The `refresh-streamer-profiles` scheduled Netlify Function checks up to 20 due profiles every 15 minutes, oldest attempts first, with a day between attempts per channel. This also fills in profiles for previously approved channels after credentials are configured. It runs automatically only on published production deployments; use **Run now** in Netlify's function page to backfill immediately. Page loads only read cached data and never call a platform API. Failed lookups preserve the last successful profile, but profiles older than 30 days are no longer shown.
 
 See the official [Twitch users API](https://dev.twitch.tv/docs/api/reference/#get-users), [YouTube channels API](https://developers.google.com/youtube/v3/docs/channels/list), and [Kick API](https://docs.kick.com/apis/channels).
+
+## Community looks gallery
+
+Open **Gallery** in the top navigation, or visit `gallery.html`. Select a color card to preview its controller in 3D, then choose **Use this look** to open those settings in Streamer mode. **Copy look link** shares the same portable editor settings. Four clearly labeled **Studio picks** remain available when the community gallery is empty or offline.
+
+Open **Saved looks**, then choose **Share your look** in Streamer mode to submit a snapshot of your current appearance and camera. Provide a look name and creator display name, then agree to public sharing. Submissions appear after review. Names are display labels, not verified or reserved identities. Controller selection, capture background, unrelated URL fields, raw input, and hardware identifiers are excluded from submissions. Only settings are stored; no image uploads or external image URLs are accepted.
+
+The API at `/.netlify/functions/community-looks` uses a strongly consistent Netlify Blobs store named `dualsense-community-looks`. No additional platform credentials are needed for the deployed function. Plain static local previews cannot submit or load community records; Studio picks and links still work. The server bounds names, colors, payload sizes, and gallery capacity; same-origin requests and five attempts per trusted IP per hour limit submissions. IP addresses are hashed before storage. Repeated identical submissions are idempotent and cannot change review state. The public gallery returns the 80 most recently approved looks.
+
+With `NETLIFY_SITE_ID` and `NETLIFY_AUTH_TOKEN` available locally:
+
+```sh
+npm run gallery:review -- list
+npm run gallery:review -- approve <id>
+npm run gallery:review -- reject <id>
+```
+
+The list includes a preview link for each submitted look. Approval makes it public; rejection removes it from public reads, including previously approved looks. Review commands are not exposed by the public API. Existing records can be inspected or removed through Netlify Blobs controls. Tests cover validation, private pending state, moderation, retries, concurrent writes, limits, public field filtering, offline failures, and a full client-to-handler round trip.

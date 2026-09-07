@@ -2,6 +2,8 @@
 // Never sends raw input streams.
 export class ControllerAnalytics {
   static featureActions = {
+    community_gallery: { opened: [], previewed: [], applied: [], link_copied: [], loaded: [], load_failed: [], share_opened: [], submit_requested: [], submitted: [], submit_failed: [] },
+    marble_maze: { opened: [], started: [], paused: [], resumed: [], restarted: [], completed: [], input_changed: [], connect_requested: [], centered: [] },
     streamer_showcase: {
       form_opened: ['surface'], loaded: ['surface'], load_failed: ['surface'],
       submit_requested: ['surface', 'platform'], submitted: ['surface', 'platform'], submit_failed: ['surface', 'platform'], channel_opened: ['surface', 'platform'],
@@ -40,6 +42,8 @@ export class ControllerAnalytics {
   // Background discoveries and asynchronous outcomes do not extend active time.
   // User-initiated connection attempts are counted by their requested events.
   static passiveEvents = new Set([
+    'controller_community_gallery_opened', 'controller_community_gallery_loaded', 'controller_community_gallery_load_failed', 'controller_community_gallery_submitted', 'controller_community_gallery_submit_failed',
+    'controller_marble_maze_opened', 'controller_marble_maze_paused', 'controller_marble_maze_completed',
     'controller_streamer_showcase_loaded', 'controller_streamer_showcase_load_failed', 'controller_streamer_showcase_submitted', 'controller_streamer_showcase_submit_failed',
     'controller_streamer_opened', 'controller_streamer_camera_help_viewed',
     'controller_streamer_input_state_changed', 'controller_streamer_model_loaded', 'controller_streamer_model_failed', 'controller_streamer_reconnect_succeeded', 'controller_streamer_reconnect_failed',
