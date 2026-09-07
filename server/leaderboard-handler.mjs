@@ -15,17 +15,18 @@ export class LeaderboardHandler {
     }
     try {
       const service = this.createService();
-      if (request.method === 'GET') return reply(await service.list(player));
+      if (request.method === 'GET') return reply(await service.list(player, new URL(request.url).searchParams.get('board') ?? 'current'));
       if (!request.headers.get('content-type')?.startsWith('application/json')) return reply({ error: 'Send a JSON request.' }, 415);
       if (Number(request.headers.get('content-length')) > 4096) return reply({ error: 'This submission is too large.' }, 413);
       const text = await request.text();
       if (text.length > 4096) return reply({ error: 'This submission is too large.' }, 413);
       let body; try { body = JSON.parse(text); } catch { return reply({ error: 'Invalid submission.' }, 400); }
       if (!body || !['start', 'submit'].includes(body.action)) return reply({ error: 'Unknown leaderboard action.' }, 400);
+      service.requireRules(body);
       await service.limit(context.ip);
-      return reply(body.action === 'start' ? await service.start(player) : await service.submit(player, body.roundId, body.nickname, body.result));
+      return reply(body.action === 'start' ? await service.start(player, body) : await service.submit(player, body.roundId, body.nickname, body.result, body));
     } catch (error) {
-      if (error instanceof LeaderboardError) return reply({ error: error.message }, error.status);
+      if (error instanceof LeaderboardError) return reply({ error: error.message, code: error.code }, error.status);
       console.error('Leaderboard storage unavailable');
       return reply({ error: 'The leaderboard is unavailable right now. Your game still works; please try again later.' }, 503);
     }

@@ -1,7 +1,8 @@
 import { randomUUID, createHash } from 'node:crypto';
+import { rangeRules } from '../controller/range-rules.js';
 
 export class LeaderboardError extends Error {
-  constructor(message, status = 400) { super(message); this.status = status; }
+  constructor(message, status = 400, code) { super(message); this.status = status; this.code = code; }
 }
 
 export class LeaderboardService {
@@ -28,13 +29,20 @@ export class LeaderboardService {
     });
   }
 
-  async start(player) {
+  requireRules(rules) {
+    if (rules?.rulesVersion !== rangeRules.rulesVersion || rules?.durationSeconds !== rangeRules.durationSeconds) {
+      throw new LeaderboardError('The leaderboard rules have changed. Refresh this page to play a new 20-second controller round.', 409, 'rules_changed');
+    }
+  }
+
+  async start(player, rules) {
+    this.requireRules(rules);
     const now = this.now(), id = this.uuid();
-    await this.change('players/20-second/' + player, current => {
+    await this.change(`players/${rangeRules.rulesVersion}/${player}`, current => {
       if (current?.round && now - current.round.startedAt < 3000) throw new LeaderboardError('Wait a moment before starting another round.', 429);
-      return { round: { id, startedAt: now } };
+      return { round: { id, startedAt: now, ...rangeRules } };
     });
-    return { roundId: id };
+    return { roundId: id, ...rangeRules };
   }
 
   validate(nickname, result) {
@@ -50,18 +58,20 @@ export class LeaderboardService {
 
   static compare(a, b) { return b.score - a.score || (b.hits / b.shots) - (a.hits / a.shots) || a.submittedAt - b.submittedAt || a.player.localeCompare(b.player); }
 
-  async submit(player, roundId, nickname, result) {
+  async submit(player, roundId, nickname, result, rules) {
+    this.requireRules(rules);
     if (typeof roundId !== 'string') throw new LeaderboardError('Start a new round to join the leaderboard.');
     const checked = this.validate(nickname, result), now = this.now();
-    const saved = await this.change('players/20-second/' + player, current => {
+    const saved = await this.change(`players/${rangeRules.rulesVersion}/${player}`, current => {
       if (!current?.round || current.round.id !== roundId) throw new LeaderboardError('This round is no longer available. Play a new round to submit.', 409);
+      this.requireRules(current.round);
       if (current.round.entry) return current; // Retried requests cannot alter a submitted round.
       const age = now - current.round.startedAt;
-      if (age < 20000 || age > 3600000) throw new LeaderboardError('Finish a new 20-second round before submitting.', 409);
-      return { round: { ...current.round, entry: { ...checked, player, submittedAt: now } } };
+      if (age < rangeRules.durationSeconds * 1000 || age > 3600000) throw new LeaderboardError('Finish a new 20-second round before submitting.', 409);
+      return { round: { ...current.round, entry: { ...checked, player, submittedAt: now, ...rangeRules } } };
     });
     const entry = saved.round.entry;
-    const board = await this.change('board/20-second-v1', current => {
+    const board = await this.change(`board/${rangeRules.rulesVersion}`, current => {
       const entries = current?.entries ?? [];
       const best = entries.find(row => row.player === player);
       if (best && LeaderboardService.compare(best, entry) <= 0) return { entries };
@@ -71,8 +81,10 @@ export class LeaderboardService {
     return { rank: rank || null, improved: board.entries.some(row => row.player === player && row.submittedAt === entry.submittedAt) };
   }
 
-  async list(player) {
-    const board = await this.store.get('board/20-second-v1', { type: 'json' });
-    return { entries: (board?.entries ?? []).slice(0, 50).map(({ player: owner, nickname, score, hits, shots, weapons }, index) => ({ rank: index + 1, nickname, score, accuracy: Math.round(hits / shots * 100), weapons, mine: owner === player })) };
+  async list(player, selection = 'current') {
+    const boards = { current: `board/${rangeRules.rulesVersion}`, previous: 'board/20-second-v1', original: 'board/v1' };
+    if (!Object.hasOwn(boards, selection)) throw new LeaderboardError('Choose an available leaderboard.');
+    const board = await this.store.get(boards[selection], { type: 'json' });
+    return { board: selection, entries: (board?.entries ?? []).slice(0, 50).map(({ player: owner, nickname, score, hits, shots, weapons }, index) => ({ rank: index + 1, nickname, score, accuracy: Math.round(hits / shots * 100), weapons, mine: owner === player })) };
   }
 }

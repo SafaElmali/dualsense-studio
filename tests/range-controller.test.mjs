@@ -154,3 +154,35 @@ test('ranking and submission failures are recorded separately without player nam
   assert.deepEqual(view.events.filter(e => e.name.startsWith('controller_leaderboard_')), [{ name: 'controller_leaderboard_submit_requested' }, { name: 'controller_leaderboard_submit_failed' }]);
   assert.equal(JSON.stringify(view.events).includes('private'), false);
 });
+
+test('rules changes block stale gameplay and offer a working refresh action instead of offline practice', async t => {
+  let requests = 0, refreshed = false;
+  const view = range(t, () => pad(), { start: async () => { requests++; throw Object.assign(new Error('Refresh this page.'), { code: 'rules_changed' }); } });
+  window.location = { reload() { refreshed = true; } };
+  await view.start(); await view.start();
+  assert.equal(requests, 1); assert.equal(view.game.state, 'ready'); assert.equal(view.roundId, null);
+  assert.equal(view.$('range-start').textContent, 'Refresh page to play'); assert.equal(view.$('range-start').disabled, false);
+  assert.equal(view.events.filter(event => event.name === 'controller_target_practice_rules_changed').length, 1);
+  assert.equal(view.events.some(event => event.name === 'controller_target_practice_started'), false);
+  view.$('range-start').dispatchEvent(new Event('click')); assert.equal(refreshed, true);
+});
+
+test('a rules change during score submission prevents retrying or replaying stale rounds', async t => {
+  const view = range(t, () => pad(), { submit: async () => { throw Object.assign(new Error('Refresh this page.'), { code: 'rules_changed' }); } });
+  view.game.start(); view.game.step(20); view.roundId = 'old'; view.lastResult = { score: 100, hits: 1, shots: 1, weapons: ['shooting'] };
+  view.$('range-nickname').value = 'Player'; await view.submitScore(); await view.start();
+  assert.equal(view.game.state, 'finished'); assert.equal(view.$('range-submit').disabled, true);
+  assert.match(view.$('range-ranking-status').textContent, /Refresh/);
+});
+
+test('a new personal best starts at zero and leaves older local scores untouched', async t => {
+  const { rangeRules } = await import('../controller/range-rules.js');
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  t.after(() => original ? Object.defineProperty(globalThis, 'localStorage', original) : delete globalThis.localStorage);
+  const values = new Map([['dualsense-range-best-20s', '6000']]);
+  globalThis.localStorage = { getItem: key => values.get(key), setItem: (key, value) => values.set(key, value) };
+  const view = range(t, () => pad()); assert.equal(view.best, 0);
+  await view.start(); view.game.score = 100; view.animate(100); view.animate(20100);
+  assert.equal(view.best, 100); assert.equal(values.get(`dualsense-range-best-${rangeRules.rulesVersion}`), '100');
+  assert.equal(values.get('dualsense-range-best-20s'), '6000');
+});

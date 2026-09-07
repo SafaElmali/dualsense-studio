@@ -23,14 +23,14 @@ export class ControllerAnalytics {
     touchpad_drawing: { color_changed: [], connect_requested: [], connect_succeeded: [], connect_cancelled: [], connect_failed: [], opened: [], started: ['input_source'], cleared: [], exported: [], export_failed: [] },
     trigger_presets: { opened: [], changed: ['mode', 'strength', 'speed_hz'], reset: ['mode'], link_created: ['mode', 'strength', 'speed_hz'], link_copied: ['mode', 'strength', 'speed_hz'], copy_failed: ['mode'], loaded: ['mode', 'strength', 'speed_hz'] },
     diagnostics: { opened: [], connected: [], measurement_started: [], measurement_completed: [], reset: [] },
-    target_practice: { opened: ['connected'], controller_required: [], controller_connection_changed: ['connected'], start_requested: ['mode'], ranking_unavailable: [], started: ['mode'], paused: ['reason'], resumed: [], closed: ['state'], weapon_changed: ['mode'], setup_opened: [], gyro_used: [], completed: ['score', 'hits', 'shots', 'weapons'] },
+    target_practice: { opened: ['connected'], controller_required: [], controller_connection_changed: ['connected'], start_requested: ['mode'], ranking_unavailable: [], rules_changed: [], started: ['mode'], paused: ['reason'], resumed: [], closed: ['state'], weapon_changed: ['mode'], setup_opened: [], gyro_used: [], completed: ['score', 'hits', 'shots', 'weapons'] },
     trigger_effects: { connect_requested: ['surface'], enabled: ['surface'], connect_cancelled: ['surface'], connect_failed: ['surface'], disabled: ['surface'] },
     viewer: { camera_selected: ['camera'], auto_changed: ['enabled'], sound_changed: ['enabled'], reset: [], controls_opened: [], model_failed: [] },
     touchpad: { connect_requested: [], connect_cancelled: [], connect_failed: [], enabled: [], disabled: [], tracking_started: ['input_source'], highlighted: ['source'], reconnected: [], reconnect_failed: [] },
     gyro: { connect_requested: [], connect_cancelled: [], connect_failed: [], enabled: [], disabled: [], recenter_started: [], recentered: [], recenter_failed: [], recenter_cancelled: [] },
     battery: { details_opened: [], connect_requested: [], connect_succeeded: [], connect_cancelled: [], connect_failed: [], reading_available: [] },
     appearance: { arrows_changed: ['setting', 'enabled', 'size', 'color_mode'], arrows_previewed: [], opened: ['target'], tab_selected: ['target'], changed: ['target', 'method'], opacity_changed: ['target', 'opacity'], previewed: ['target'], reset: ['target'], sync_requested: [], sync_enabled: [], sync_disabled: [], sync_cancelled: [], sync_failed: ['stage'] },
-    leaderboard: { opened: [], refreshed: [], loaded: [], load_failed: [], personal_rank_clicked: [], submit_requested: [], submitted: ['score'], submit_failed: [] },
+    leaderboard: { opened: ['board'], refreshed: ['board'], loaded: ['board'], load_failed: ['board'], personal_rank_clicked: ['board'], board_selected: ['board'], submit_requested: [], submitted: ['score'], submit_failed: [] },
     scorecard: { exported: ['score', 'hits', 'shots', 'weapons'], export_failed: [] },
   };
   // Background discoveries and asynchronous outcomes do not extend active time.
@@ -39,7 +39,7 @@ export class ControllerAnalytics {
     'controller_streamer_showcase_loaded', 'controller_streamer_showcase_load_failed', 'controller_streamer_showcase_submitted', 'controller_streamer_showcase_submit_failed',
     'controller_streamer_opened', 'controller_streamer_camera_help_viewed',
     'controller_streamer_input_state_changed', 'controller_streamer_model_loaded', 'controller_streamer_model_failed', 'controller_streamer_reconnect_succeeded', 'controller_streamer_reconnect_failed',
-    'controller_target_practice_controller_required', 'controller_target_practice_controller_connection_changed', 'controller_target_practice_ranking_unavailable', 'controller_target_practice_closed',
+    'controller_target_practice_rules_changed', 'controller_target_practice_controller_required', 'controller_target_practice_controller_connection_changed', 'controller_target_practice_ranking_unavailable', 'controller_target_practice_closed',
     'controller_leaderboard_loaded', 'controller_leaderboard_load_failed', 'controller_leaderboard_submitted', 'controller_leaderboard_submit_failed',
     'controller_touchpad_drawing_connect_succeeded', 'controller_touchpad_drawing_connect_cancelled', 'controller_touchpad_drawing_connect_failed',
     'controller_touchpad_connect_cancelled', 'controller_touchpad_connect_failed', 'controller_gyro_connect_cancelled', 'controller_gyro_connect_failed',
@@ -60,6 +60,7 @@ export class ControllerAnalytics {
   ]);
 
   static propertyValues = {
+    board: ['current', 'previous', 'original'],
     platform: ['Twitch', 'YouTube', 'Kick'],
     topic: ['connection', 'stick_drift', 'device_access', 'virtual_controller', 'compatibility', 'independence', 'pricing', 'obs_setup', 'transparent_background', 'customization', 'demo', 'stick_arrows'],
     destination: ['studio', 'streamer', 'obs_setup', 'x', 'github'],
