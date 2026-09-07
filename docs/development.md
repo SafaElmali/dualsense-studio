@@ -68,7 +68,7 @@ The main page and Streamer builder include a Buy Me a Coffee support link. Set `
 
 The canonical public origin is `https://dualsense.studio`. Search metadata and JSON-LD live in the HTML so crawlers do not need the 3D renderer. The build includes `robots.txt`, `sitemap.xml`, a branded `404.html`, PNG icons, and the social preview in `assets/`. Appearance and trigger preset URLs retain their settings while canonicalizing to the unparameterized page. OBS capture pages stay crawlable but carry `noindex`.
 
-Run `npm run test:seo` for a build and targeted checks of metadata, indexing, structured data, links and social assets. See [the SEO audit](seo-audit.md) for live findings, validation limits and Search Console follow-up. The sitemap lists the pages shipped by the full build; omit Streamer from a selective homepage-only release until it is public.
+Run `npm run test:seo` for a build and targeted checks of metadata, indexing, structured data, links and social assets. The sitemap lists the pages shipped by the full build.
 
 ## Attribution
 

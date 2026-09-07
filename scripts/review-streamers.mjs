@@ -5,7 +5,7 @@ const [action = 'list', id] = process.argv.slice(2);
 try {
   if (!['list', 'approve', 'reject'].includes(action)) throw new Error('Use: npm run streamers:review -- list | approve <id> | reject <id>');
   const { NETLIFY_SITE_ID: siteID, NETLIFY_AUTH_TOKEN: token } = process.env;
-  if (!siteID || !token) throw new Error('Set NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN for the site before reviewing submissions. See docs/streamer-showcase.md.');
+  if (!siteID || !token) throw new Error('Set NETLIFY_SITE_ID and NETLIFY_AUTH_TOKEN for the site before reviewing submissions.');
   const service = new StreamerShowcaseService(getStore({ name: StreamerShowcaseService.storeName, consistency: 'strong', siteID, token }));
   if (action !== 'list') {
     await service.review(id, action === 'approve' ? 'approved' : 'rejected');

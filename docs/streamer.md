@@ -41,10 +41,10 @@ PostHog covers Streamer customization, demos, OBS export/setup, model loading, a
 
 ## Validation and manual checks
 
-Validation covers portable/malformed links, both HID report layouts, analog input, controller selection, permission ambiguity, cancellation during open, disconnect/stale cleanup, no output writes, and analytics boundaries. Browser checks cover the setup/capture flows, mobile layout, transparency, and simulated input while focus is unavailable. On the development Mac, the OBS Browser Source rendered the overlay and physical controller button input was observed and confirmed by the user. Chrome also received direct USB reports. Finger movement and continued input while gaming still need a final hands-on check. Completing native Chrome window capture was blocked by OBS crashing during automated source creation; no recording or streaming was started.
+Validation covers portable/malformed links, both HID report layouts, analog input, controller selection, permission ambiguity, cancellation during open, disconnect/stale cleanup, no output writes, and analytics boundaries. Manual checks should cover the setup/capture flows, mobile layout, transparency, simulated input while focus is unavailable, and physical controller input while gaming.
 
 Analytics regression checks cover every literal event call against the allowlist, every Streamer form field, bounded properties, one event per committed rotation, demo outcomes, controller disconnect/resume, and actual gyro recenter outcomes. Local analytics remain disabled unless `analytics_test=1` is explicitly present when the page loads.
 
 ## Streamer showcase
 
-Streamers can submit their Twitch, YouTube, or Kick channel for review. Only approved channels appear publicly. See [storage, moderation, and testing](streamer-showcase.md).
+Streamers can submit their Twitch, YouTube, or Kick channel for review. Only approved channels appear publicly.
