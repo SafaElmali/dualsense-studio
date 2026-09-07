@@ -25,7 +25,7 @@ test('Auto camera survives copying, reopening, and editing an OBS link', () => {
   const captureSettings = StreamerSettings.read(link.search);
   assert.equal(captureSettings.camera, 'auto');
   assert.equal(StreamerSettings.read(StreamerSettings.query({ ...captureSettings, scale: 80 })).camera, 'auto');
-  assert.equal(StreamerSettings.read('').camera, 'angle');
+  assert.equal(StreamerSettings.read('').camera, 'custom');
 });
 
 test('custom camera preserves all three angles through OBS and back to the editor', () => {
@@ -44,7 +44,7 @@ test('custom camera preserves all three angles through OBS and back to the edito
 test('custom angles reject invalid values and bound untrusted links', () => {
   for (const value of ['', ' ', 'NaN', 'Infinity', '1;alert(1)']) {
     const settings = StreamerSettings.normalize({ camera: 'custom', pitch: value, yaw: value, roll: value });
-    assert.deepEqual(StreamerRotation.toPose(settings), { x: 0, y: 0, z: 0 });
+    assert.deepEqual(StreamerRotation.toPose(settings), StreamerRotation.toPose(StreamerSettings.defaults));
   }
   const settings = StreamerSettings.read('?camera=custom&pitch=10000&yaw=-10000&roll=23.456');
   assert.equal(settings.pitch, 180);
@@ -133,11 +133,11 @@ test('untrusted overlay parameters are bounded and cannot become arbitrary CSS',
   assert.equal(StreamerSettings.read(StreamerSettings.query({ triggerMeters: 'show' })).triggerMeters, 'show');
   const clean = StreamerSettings.read('?body=red&light=%23fff&camera=spin&scale=Infinity&slot=-1&background=url(evil)&color=%23abcdef');
   assert.equal(clean.body, StreamerSettings.defaults.body);
-  assert.equal(clean.camera, 'angle'); assert.equal(clean.scale, 100); assert.equal(clean.slot, 'auto');
+  assert.equal(clean.camera, 'custom'); assert.equal(clean.scale, 75); assert.equal(clean.slot, 'auto');
   assert.equal(StreamerSettings.background(clean), 'transparent');
   assert.equal(StreamerSettings.normalize({ scale: 10000 }).scale, 120);
   assert.equal(StreamerSettings.normalize({ scale: -50 }).scale, 60);
-  assert.equal(StreamerSettings.normalize({ scale: '' }).scale, 100);
+  assert.equal(StreamerSettings.normalize({ scale: '' }).scale, 75);
   assert.equal(StreamerSettings.background({ background: 'solid', color: '#abcdef' }), '#abcdef');
   assert.equal(StreamerSettings.background({ background: 'green' }), '#00ff00');
 });

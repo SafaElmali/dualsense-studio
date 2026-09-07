@@ -3,7 +3,7 @@ import { ButtonHighlight } from './button-highlight.js';
 
 // One portable, validated configuration for the preview and capture page.
 export class StreamerSettings {
-  static defaults = Object.freeze({ ...StickArrowSettings.defaults, camera: 'angle', pitch: 0, yaw: 0, roll: 0, triggerMeters: 'show', body: '#e9eaf0', light: '#0046ff', highlight: ButtonHighlight.defaults.color, highlightOpacity: ButtonHighlight.defaults.opacity, background: 'transparent', color: '#111215', scale: 100, slot: 'auto' });
+  static defaults = Object.freeze({ ...StickArrowSettings.defaults, camera: 'custom', pitch: 40, yaw: -0.8, roll: 0, triggerMeters: 'show', body: '#e9eaf0', light: '#0046ff', highlight: ButtonHighlight.defaults.color, highlightOpacity: ButtonHighlight.defaults.opacity, background: 'transparent', color: '#111215', scale: 75, slot: 'auto' });
 
   static normalize(values = {}) {
     const result = { ...this.defaults, ...StickArrowSettings.normalize(values) };
