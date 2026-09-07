@@ -23,6 +23,27 @@
 # A canonical tag consolidates index.html without a redirect: Netlify's
 # Pretty URLs may normalize that path to / before redirect matching.
 # Leave API endpoints and non-matching paths to their normal handlers.
+[[redirects]]
+  from = "/streamer"
+  to = "/streamer.html"
+  status = 200
+
+[[redirects]]
+  from = "/overlay"
+  to = "/overlay.html"
+  status = 200
+
+# Allow crawling so search engines can see the noindex directive.
+[[headers]]
+  for = "/overlay"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
+[[headers]]
+  for = "/overlay.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
 [[headers]]
   for = "/404.html"
   [headers.values]

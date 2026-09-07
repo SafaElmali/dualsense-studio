@@ -30,12 +30,13 @@
   <meta name="twitter:image:alt" content="DualSense Studio — an interactive PS5 controller playground at dualsense.studio">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://dualsense.studio/#website","url":"https://dualsense.studio/","name":"DualSense Studio","alternateName":"dualsense.studio","inLanguage":"en"},{"@type":"WebPage","@id":"https://dualsense.studio/#webpage","url":"https://dualsense.studio/","name":"DualSense Studio — PS5 Controller Tester & Playground","description":"Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.","inLanguage":"en","isPartOf":{"@id":"https://dualsense.studio/#website"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://dualsense.studio/assets/dualsense-studio-social.png","width":1200,"height":630},"mainEntity":{"@id":"https://dualsense.studio/#app"}},{"@type":"WebApplication","@id":"https://dualsense.studio/#app","url":"https://dualsense.studio/","name":"DualSense Studio","description":"Test your PS5 DualSense controller in 3D. Check stick drift, buttons and triggers, practice your aim, and draw glowing trails with your touchpad.","applicationCategory":"EntertainmentApplication","operatingSystem":"Web browser","browserRequirements":"JavaScript and WebGL. Advanced controller features require desktop Chrome or Edge and controller access."}]}</script>
   <link rel="stylesheet" href="./controller/controller.css?v=ds-logo-1">
-  <link rel="stylesheet" href="./controller/site-info.css">
+  <link rel="stylesheet" href="./controller/site-info.css?v=contact-1">
   <link rel="stylesheet" href="./controller/range.css">
   <link rel="stylesheet" href="./controller/leaderboard.css">
   <link rel="stylesheet" href="./controller/battery.css?v=ds-logo-1">
-  <link rel="stylesheet" href="./controller/appearance.css">
-  <link rel="stylesheet" href="./controller/support.css?v=support-2">
+  <link rel="stylesheet" href="./controller/appearance.css?v=highlights-2">
+  <link rel="stylesheet" href="./controller/stick-arrows.css?v=arrow-controls-2">
+  <link rel="stylesheet" href="./controller/support.css?v=coffee-only-1">
   <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
 </head>
 <body>
@@ -50,7 +51,7 @@
       </button>
       <span class="battery-tooltip" id="battery-tooltip" role="tooltip">Connect your DualSense to read its battery.</span>
     </div><button class="icon-button" id="sound" aria-label="Enable button sounds" aria-pressed="false" title="Button sounds"><svg viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4Z"/><path id="sound-lines" d="m16 9 5 6m0-6-5 6"/></svg></button></div></header>
-  <section class="intro"><div><h1>DualSense Studio.</h1><p>Interactive PS5 controller tester. Every input, in view.</p><button class="range-launch" id="open-range">◎ &nbsp; Play target practice <span>NEW</span></button></div><div class="model"><span>WIRELESS CONTROLLER</span>CFI–ZCT1W / 01</div></section>
+  <section class="intro"><div><h1>DualSense Studio.</h1><p>Interactive PS5 controller tester. Every input, in view.</p><div class="intro-actions"><button class="range-launch" id="open-range">◎ &nbsp; Play target practice <span>NEW</span></button><a data-analytics-destination="streamer" data-analytics-placement="intro" class="streamer-launch" href="./streamer.html"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M12 17v4M8 21h8"/><path class="streamer-play" d="M10 7l5 3-5 3Z"/></svg> Streamer mode <span>↗</span></a></div></div><div class="model"><span>WIRELESS CONTROLLER</span>CFI–ZCT1W / 01</div></section>
   <noscript><p class="site-noscript">Enable JavaScript to use the 3D controller and input tools. You can still read the features and connection help below.</p></noscript>
   <section class="stage" aria-label="Interactive 3D DualSense controller">
     <div class="view-switch" aria-label="Camera angle"><button id="auto-view" aria-pressed="true" disabled title="Follow the controls you use">Auto</button><button data-view="front" aria-pressed="false" disabled>Front</button><button data-view="angle" aria-pressed="false" disabled>Angle</button><button data-view="back" aria-pressed="false" disabled>Back</button></div>
@@ -67,7 +68,7 @@
         <button id="open-appearance" class="sensor-button" type="button" aria-label="Controller colors" aria-expanded="false" aria-controls="appearance-panel" title="Controller colors" disabled><span class="appearance-dot" aria-hidden="true"></span></button>
         <section id="appearance-panel" class="appearance-panel" aria-label="Controller colors" hidden>
           <div class="appearance-header"><h2>Make it yours.</h2><button id="close-appearance" type="button" aria-label="Close color picker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-          <div class="appearance-tabs" role="tablist" aria-label="Color to customize"><button id="appearance-light-tab" role="tab" type="button" aria-selected="true" aria-controls="appearance-light-panel" data-color-tab="light">Light</button><button id="appearance-body-tab" role="tab" type="button" aria-selected="false" aria-controls="appearance-body-panel" data-color-tab="body" tabindex="-1">Body</button></div>
+          <div class="appearance-tabs" role="tablist" aria-label="Color to customize"><button id="appearance-light-tab" role="tab" type="button" aria-selected="true" aria-controls="appearance-light-panel" data-color-tab="light">Light</button><button id="appearance-body-tab" role="tab" type="button" aria-selected="false" aria-controls="appearance-body-panel" data-color-tab="body" tabindex="-1">Body</button><button id="appearance-highlight-tab" role="tab" type="button" aria-selected="false" aria-controls="appearance-highlight-panel" data-color-tab="highlight" tabindex="-1">Highlight</button></div>
           <div id="appearance-light-panel" role="tabpanel" aria-labelledby="appearance-light-tab" data-color-panel="light">
             <p class="appearance-description">The glow around your touchpad.</p>
             <div class="appearance-presets" aria-label="Light color presets"><button type="button" data-color="#0046ff" style="--color:#0046ff" aria-label="Blue light"></button><button type="button" data-color="#a855f7" style="--color:#a855f7" aria-label="Violet light"></button><button type="button" data-color="#ff4f9a" style="--color:#ff4f9a" aria-label="Pink light"></button><button type="button" data-color="#52e2b1" style="--color:#52e2b1" aria-label="Mint light"></button><button type="button" data-color="#ffc76b" style="--color:#ffc76b" aria-label="Amber light"></button><button type="button" data-color="#ffffff" style="--color:#ffffff" aria-label="White light"></button></div>
@@ -82,6 +83,19 @@
             <div class="appearance-custom"><label class="appearance-picker" title="Choose a custom body color"><input id="appearance-body" type="color" value="#e9eaf0" aria-label="Custom body color"></label><label class="appearance-hex-label" for="appearance-body-hex">HEX<input id="appearance-body-hex" type="text" value="#E9EAF0" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Body hex color" aria-describedby="appearance-body-error"></label></div>
             <p id="appearance-body-error" class="appearance-error" role="status"></p><p class="appearance-note">Changes the on-screen shell. Your physical controller’s finish stays the same.</p>
             <button class="appearance-reset" type="button" data-color-reset="body">Reset to white</button>
+          </div>
+          <div id="appearance-highlight-panel" role="tabpanel" aria-labelledby="appearance-highlight-tab" data-color-panel="highlight" hidden>
+            <p class="appearance-description">Make every button press stand out.</p>
+            <div class="appearance-presets" aria-label="Highlight color presets"><button type="button" data-color="#ffbf47" style="--color:#ffbf47" aria-label="Gold highlight"></button><button type="button" data-color="#0046ff" style="--color:#0046ff" aria-label="Blue highlight"></button><button type="button" data-color="#ff4f9a" style="--color:#ff4f9a" aria-label="Pink highlight"></button><button type="button" data-color="#52e2b1" style="--color:#52e2b1" aria-label="Mint highlight"></button><button type="button" data-color="#ff4433" style="--color:#ff4433" aria-label="Red highlight"></button><button type="button" data-color="#ffffff" style="--color:#ffffff" aria-label="White highlight"></button></div>
+            <div class="appearance-custom"><label class="appearance-picker" title="Choose a custom highlight color"><input id="appearance-highlight" type="color" value="#ffbf47" aria-label="Custom highlight color"></label><label class="appearance-hex-label" for="appearance-highlight-hex">HEX<input id="appearance-highlight-hex" type="text" value="#FFBF47" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Highlight hex color" aria-describedby="appearance-highlight-error"></label></div>
+            <p id="appearance-highlight-error" class="appearance-error" role="status"></p>
+            <label class="appearance-range-label" for="appearance-highlight-opacity">Opacity <output id="appearance-highlight-opacity-value" for="appearance-highlight-opacity">100%</output></label>
+            <input id="appearance-highlight-opacity" type="range" min="0" max="100" step="1" value="100" aria-describedby="appearance-highlight-note">
+            <div class="appearance-range-ends" aria-hidden="true"><span>Off</span><span>Solid</span></div>
+            <p id="appearance-highlight-note" class="appearance-note">0% hides the tint. 100% uses the full color.</p>
+            <button id="appearance-highlight-preview" class="appearance-preview" type="button">Preview highlight <span aria-hidden="true">↗</span></button>
+            <button class="appearance-reset" type="button" data-color-reset="highlight">Reset highlight</button>
+            <details class="appearance-stick-arrows" data-help-topic="stick_arrows"><summary>Stick arrows</summary><div id="appearance-arrows"></div></details>
           </div>
         </section>
       </div>
@@ -115,19 +129,19 @@
     <div class="site-info-intro"><p class="site-eyebrow">EXPLORE YOUR CONTROLLER</p><h2 id="about-title">More than a button check.</h2><p>DualSense Studio is an interactive PS5 controller tester and playground in your browser. Explore the 3D model, or connect your DualSense over USB or Bluetooth to see your real inputs come to life.</p></div>
     <div class="site-feature-grid">
       <article><span class="site-feature-number" aria-hidden="true">01</span><h3>Check stick drift, buttons &amp; triggers</h3><p>Open Controller diagnostics, release both sticks, and measure their resting positions for two seconds. Inspect the input your browser receives, test L2 and R2 pressure, and check button presses. This helps you spot drift; it does not repair or recalibrate hardware.</p></article>
-      <article><span class="site-feature-number" aria-hidden="true">02</span><h3>Practice your aim</h3><p>Play a 20-second target practice round. Aim with your mouse or a connected controller, choose a weapon, and track your accuracy. Connect a DualSense to try gyro aiming. Submit your score to compare your best round on the leaderboard.</p></article>
+      <article><span class="site-feature-number" aria-hidden="true">02</span><h3>Practice your aim</h3><p>Connect a controller for a 20-second target practice round. Aim with the right stick or enable gyro aiming, choose a weapon, and track your accuracy. Submit your score to compare your best round on the leaderboard.</p></article>
       <article><span class="site-feature-number" aria-hidden="true">03</span><h3>Turn your touchpad into a canvas</h3><p>Slide a finger across your connected DualSense touchpad to draw glowing trails, choose a color, and save your creation as an image. Touchpad tracking can follow your fingers without pressing the pad.</p></article>
       <article><span class="site-feature-number" aria-hidden="true">04</span><h3>Feel it. Move it. Make it yours.</h3><p>Try adaptive trigger effects, customize a preset and share its link. Use gyro motion to rotate the 3D controller, change the virtual shell color, or sync the light around your physical controller’s touchpad.</p></article>
     </div>
     <section class="site-faq" id="controller-help" aria-labelledby="faq-title">
-      <div><p class="site-eyebrow">BEFORE YOU PLAY</p><h2 id="faq-title">A little connection help.</h2></div>
+      <div><p class="site-eyebrow">BEFORE YOU PLAY</p><h2 id="faq-title">A little connection help.</h2><p class="contact-note">Questions or feedback?<br><a href="https://x.com/SafaElmali" target="_blank" rel="noopener noreferrer" data-analytics-destination="x" data-analytics-placement="help">Reach out to @SafaElmali on X <span aria-hidden="true">↗</span></a></p></div>
       <div class="site-faq-answers">
-        <details><summary>How do I connect my PS5 controller?</summary><p>Plug your DualSense into your computer with a USB data cable, or pair it using your computer’s Bluetooth settings. Open DualSense Studio and press a controller button. For gyro, touchpad tracking, battery readings, lights, and adaptive triggers, use desktop Chrome or Edge and select your controller when the browser asks for access.</p></details>
-        <details><summary>Does this fix stick drift?</summary><p>No. Controller diagnostics shows stick movement and measures the resting offset reported by your browser, without adding a deadzone. It can help you check for drift, but it cannot repair worn components or change how your controller behaves on a PS5 or in other games.</p></details>
-        <details><summary>Why do buttons work but battery or gyro needs permission?</summary><p>Basic buttons and sticks can work through the browser’s gamepad support. Battery status, gyro and other DualSense features need separate device access. Click the relevant feature and select your controller to grant that access. Permissions are specific to the browser and website you use.</p></details>
-        <details><summary>Can I try it without a controller?</summary><p>Yes. Rotate the virtual controller, click its buttons, drag its sticks, and change its appearance. Open Controls for keyboard shortcuts. You can also try target practice with your mouse. Physical features such as adaptive triggers and gyro require a DualSense.</p></details>
-        <details><summary>Does it work on mobile or every browser?</summary><p>You can explore the 3D model in a browser with JavaScript and WebGL support. Physical controller support varies by device and browser. Desktop Chrome or Edge is recommended for the full set of DualSense features; a USB data cable is the simplest way to start.</p></details>
-        <details><summary>Is DualSense Studio an official PlayStation tool?</summary><p>No. DualSense Studio is an independent project and is not affiliated with or endorsed by Sony or PlayStation. The 3D model is credited below.</p></details>
+        <details data-help-topic="connection"><summary>How do I connect my PS5 controller?</summary><p>Plug your DualSense into your computer with a USB data cable, or pair it using your computer’s Bluetooth settings. Open DualSense Studio and press a controller button. For gyro, touchpad tracking, battery readings, lights, and adaptive triggers, use desktop Chrome or Edge and select your controller when the browser asks for access.</p></details>
+        <details data-help-topic="stick_drift"><summary>Does this fix stick drift?</summary><p>No. Controller diagnostics shows stick movement and measures the resting offset reported by your browser, without adding a deadzone. It can help you check for drift, but it cannot repair worn components or change how your controller behaves on a PS5 or in other games.</p></details>
+        <details data-help-topic="device_access"><summary>Why do buttons work but battery or gyro needs permission?</summary><p>Basic buttons and sticks can work through the browser’s gamepad support. Battery status, gyro and other DualSense features need separate device access. Click the relevant feature and select your controller to grant that access. Permissions are specific to the browser and website you use.</p></details>
+        <details data-help-topic="virtual_controller"><summary>Can I try it without a controller?</summary><p>Yes. Rotate the virtual controller, click its buttons, drag its sticks, and change its appearance. Open Controls for keyboard shortcuts. Target practice requires a connected controller, and physical features such as adaptive triggers and gyro require a DualSense.</p></details>
+        <details data-help-topic="compatibility"><summary>Does it work on mobile or every browser?</summary><p>You can explore the 3D model in a browser with JavaScript and WebGL support. Physical controller support varies by device and browser. Desktop Chrome or Edge is recommended for the full set of DualSense features; a USB data cable is the simplest way to start.</p></details>
+        <details data-help-topic="independence"><summary>Is DualSense Studio an official PlayStation tool?</summary><p>No. DualSense Studio is an independent project and is not affiliated with or endorsed by Sony or PlayStation. The 3D model is credited below.</p></details>
       </div>
     </section>
   </section>
@@ -137,8 +151,7 @@
       <div><h2 id="support-title">Help keep the studio growing.</h2><p>Enjoying DualSense Studio? Support independent development and the next round of controller experiments.</p></div>
     </div>
     <div class="studio-support-action">
-      <div class="studio-support-option" data-support-provider="buymeacoffee" hidden><a class="studio-support-tip" data-support-link target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span></a><small>One-time tip. No account needed.</small></div>
-      <div class="studio-support-option" data-support-provider="patreon" hidden><a class="studio-support-monthly" data-support-link target="_blank" rel="noopener noreferrer">Monthly support on Patreon <span aria-hidden="true">↗</span></a></div>
+      <div class="studio-support-option" data-support-provider="buymeacoffee" hidden><a class="studio-support-tip" data-support-link target="_blank" rel="noopener noreferrer"><img src="./assets/buy-me-a-coffee-yellow.svg" width="212" height="60" alt="Buy me a coffee"></a><small>One-time tip. No account needed.</small></div>
       <small>Optional support. Free to keep playing.</small>
     </div>
   </section>
@@ -158,14 +171,14 @@
   </div>
   <div class="range-timeline" aria-hidden="true"><i id="range-time-bar"></i></div>
   <div class="range-field">
-    <canvas id="range-canvas" width="1000" height="560" tabindex="0" aria-label="Target practice. Aim with the right stick, gyro, mouse, arrow keys or WASD. Fire with R2, Space, or click. On touchscreens, tap a target."></canvas>
+    <canvas id="range-canvas" width="1000" height="560" tabindex="0" aria-label="Target practice. Controller required. Aim with the right stick or gyro. Fire with R2. Press Triangle to switch weapons."></canvas>
     <div class="range-arena-label" aria-hidden="true"><i></i> BAY 01 <span>PRECISION TRAINING</span></div>
     <div id="range-overlay" class="range-overlay">
       <div class="range-center-card">
         <span id="range-card-eyebrow" class="range-eyebrow">20 SECONDS. JUST YOU AND THE TARGETS.</span>
-        <h3 id="range-title">Find your focus.</h3>
+        <h3 id="range-title">Connect your controller.</h3>
         <div id="range-final-score" class="range-final-score" hidden><strong id="range-final-points">0</strong><span>POINTS</span></div>
-        <p id="range-summary">Three moving targets. Four weapons. Make every shot count.</p>
+        <p id="range-summary">A controller is required for target practice. Aim with the right stick or gyro and fire with R2.</p>
         <form id="range-submit-form" class="range-submit" hidden>
           <label for="range-nickname">CLAIM YOUR PLACE ON THE LEADERBOARD</label>
           <div class="range-submit-controls"><input id="range-nickname" name="nickname" minlength="2" maxlength="20" required autocomplete="nickname" placeholder="Your name" aria-describedby="range-public-note"><button id="range-submit" class="range-primary" type="submit">Submit score <span aria-hidden="true">↗</span></button></div>
@@ -173,20 +186,20 @@
           <p id="range-submit-status" role="status"></p>
         </form>
         <p id="range-ranking-status" class="range-ranking-status" role="status"></p>
-        <div class="range-result-actions"><button id="range-start" class="range-primary">Start round <span aria-hidden="true">↗</span></button><button id="range-save-card" class="retry-button" hidden>Save scorecard</button></div>
-        <small id="range-controller-start">Or press × on your controller</small><span id="range-download-status" role="status"></span>
+        <div class="range-result-actions"><button id="range-start" class="range-primary" disabled>Controller required</button><button id="range-save-card" class="retry-button" hidden>Save scorecard</button></div>
+        <small id="range-controller-start">Connect via USB or Bluetooth, then press any controller button.</small><span id="range-download-status" role="status"></span>
       </div>
     </div>
   </div>
   <div class="range-bottom-bar">
     <div class="range-loadout"><span class="range-loadout-icon" aria-hidden="true">⌁</span><label for="range-weapon">YOUR LOADOUT<select id="range-weapon"><option value="shooting">Pistol</option></select></label><span id="range-weapon-note">PRECISION / SINGLE SHOT</span></div>
-    <div class="range-quick-guide"><span>AIM <b>Mouse / R stick</b></span><span>FIRE <b>Click / R2</b></span></div>
+    <div class="range-quick-guide"><span>AIM <b>R stick / Gyro</b></span><span>FIRE <b>R2</b></span></div>
     <button id="range-pause" class="retry-button" disabled>Pause <span aria-hidden="true">Ⅱ</span></button>
   </div>
   <details class="range-setup"><summary><span>Controller setup &amp; controls</span><span class="range-setup-hint">GYRO · ADAPTIVE TRIGGERS <b>+</b></span></summary><div class="range-setup-content">
-    <div class="range-toolbar"><button id="range-effects" class="retry-button">Enable adaptive triggers</button><p id="range-feedback">Play freely, or enable adaptive triggers for the physical effect.</p></div>
+    <div class="range-toolbar"><button id="range-effects" class="retry-button">Enable adaptive triggers</button><p id="range-feedback">Enable adaptive triggers before playing to feel your selected weapon.</p></div>
     <div class="range-gyro-row"><button id="range-gyro" class="retry-button">Enable gyro aiming</button><button id="range-recenter-gyro" class="retry-button" disabled>Recenter gyro</button><span id="range-gyro-status" role="status">Use controller motion alongside the right stick to aim.</span></div>
-    <p class="range-instructions"><b>Controller</b> Right stick or gyro to aim · R2 to fire · △ to switch weapons <br><b>Mouse / keyboard</b> Move + click, or WASD / arrows + Space · 1–4 to switch · Tap targets on mobile</p>
+    <p class="range-instructions"><b>Controller</b> Right stick or gyro to aim · R2 to fire · △ to switch weapons · × to start or resume</p>
     <p class="range-instructions">Pistol &amp; Shotgun: release between shots. LMG &amp; SMG: hold to fire. Bullseyes score 100, outer hits 50, with bonuses for a streak.</p>
   </div></details>
   <output id="range-result" class="sr-only" aria-live="polite"></output>
@@ -231,6 +244,6 @@
   <div class="leaderboard-footer"><div id="leaderboard-personal" class="leaderboard-personal"></div><button id="leaderboard-refresh" class="leaderboard-button" aria-label="Refresh scores"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m10-3a7 7 0 0 0-12-3L4 9m1 6a7 7 0 0 0 12 3l3-3"/></svg><span>Refresh</span></button></div>
   <p id="leaderboard-status" class="leaderboard-announcement" role="status"></p>
 </dialog>
-<script type="module" src="./controller/controller-app.js?v=support-2"></script>
+<script type="module" src="./controller/controller-app.js?v=contact-1"></script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+.stick-arrow-controls{color:#b7c8be;font-size:12px}
+.stick-arrow-controls .arrow-switch,.stick-arrow-controls .arrow-auto,.stick-arrow-controls .arrow-size-label{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer}
+.stick-arrow-controls input[type=checkbox]{accent-color:#bde2ca;width:16px;height:16px;margin:0;flex-shrink:0}
+.stick-arrow-controls .arrow-options{min-width:0;border:0;padding:0;margin:18px 0 0}
+.stick-arrow-controls .arrow-options:disabled{opacity:.4}
+.stick-arrow-controls output{font:12px ui-monospace,monospace;color:#d1e9db}
+.stick-arrow-controls input[type=range]{display:block;width:100%;margin:13px 0 21px;accent-color:#bde2ca;cursor:pointer}
+.stick-arrow-controls .arrow-auto{font-size:11px;margin-bottom:14px}
+.stick-arrow-controls .arrow-color-row{display:flex;align-items:center;gap:10px}
+.stick-arrow-controls .arrow-color-row label{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.stick-arrow-controls input[type=color]{width:30px;height:30px;flex-shrink:0;background:none;padding:0;border:0;cursor:pointer}
+.stick-arrow-controls input[type=text]{width:90px;min-width:0;flex:1;padding:9px;border:1px solid #9aadbd33;border-radius:7px;background:#111a1b;color:#dcebe2;font:11px ui-monospace,monospace}
+.stick-arrow-controls input:focus-visible,.stick-arrow-controls button:focus-visible{outline:2px solid #bde2ca;outline-offset:3px}
+.stick-arrow-controls input[aria-invalid=true]{border-color:#ef9898}
+.stick-arrow-controls .arrow-error{color:#f0a5a5;font-size:11px;margin:8px 0}.stick-arrow-controls .arrow-error:empty{display:none}
+.stick-arrow-controls .arrow-preview{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 12px;margin-top:15px;border:1px solid #8eb89f55;border-radius:8px;background:#89b39a12;color:#c7e4d3;font-size:12px;cursor:pointer}
+.stick-arrow-controls .arrow-preview:hover{background:#89b39a25}.stick-arrow-controls .arrow-preview:disabled{cursor:default}
+.stick-arrow-controls .arrow-note{font-size:10px;color:#91a398;line-height:1.6;margin:13px 0 0}
+.appearance-stick-arrows{border-top:1px solid #a4b5ca25;margin-top:18px;padding-top:15px}.appearance-stick-arrows summary{cursor:pointer;font-size:12px;color:#c4d0de}.appearance-stick-arrows[open] summary{margin-bottom:16px}

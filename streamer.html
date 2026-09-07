@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101214"><meta name="description" content="Create a free 3D DualSense controller overlay for OBS. Customize colors, camera angles, button highlights and stick arrows. Try the demo without a controller.">
+  <title>Free PS5 Controller Overlay for OBS — DualSense Studio</title>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico?v=ds-logo-1">
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png?v=ds-logo-1">
+  <link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon-48.png?v=ds-logo-1">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png?v=ds-logo-1">
+  <link rel="canonical" href="https://dualsense.studio/streamer.html">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DualSense Studio">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Free PS5 Controller Overlay for OBS — DualSense Studio">
+  <meta property="og:description" content="Create a free 3D DualSense controller overlay for OBS. Customize colors, camera angles, button highlights and stick arrows. Try the demo without a controller.">
+  <meta property="og:url" content="https://dualsense.studio/streamer.html">
+  <meta property="og:image" content="https://dualsense.studio/assets/dualsense-studio-cover.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1774">
+  <meta property="og:image:height" content="887">
+  <meta property="og:image:alt" content="DualSense Studio — controller playground and OBS overlays, with a blue and white 3D controller">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free PS5 Controller Overlay for OBS — DualSense Studio">
+  <meta name="twitter:description" content="Create a free 3D DualSense controller overlay for OBS. Customize colors, camera angles, button highlights and stick arrows. Try the demo without a controller.">
+  <meta name="twitter:image" content="https://dualsense.studio/assets/dualsense-studio-cover.png">
+  <meta name="twitter:image:alt" content="DualSense Studio — controller playground and OBS overlays, with a blue and white 3D controller">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://dualsense.studio/streamer.html#webpage","url":"https://dualsense.studio/streamer.html","name":"Free PS5 Controller Overlay for OBS — DualSense Studio","description":"Create a free 3D DualSense controller overlay for OBS. Customize colors, camera angles, button highlights and stick arrows. Try the demo without a controller.","inLanguage":"en","isPartOf":{"@id":"https://dualsense.studio/#website"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://dualsense.studio/assets/dualsense-studio-cover.png","width":1774,"height":887},"mainEntity":{"@id":"https://dualsense.studio/streamer.html#app"}},{"@type":"WebApplication","@id":"https://dualsense.studio/streamer.html#app","url":"https://dualsense.studio/streamer.html","name":"DualSense Studio Streamer Mode","description":"Create a free 3D DualSense controller overlay for OBS. Customize colors, camera angles, button highlights and stick arrows. Try the demo without a controller.","applicationCategory":"MultimediaApplication","operatingSystem":"Web browser","browserRequirements":"JavaScript and WebGL. Advanced controller features require desktop Chrome or Edge and controller access.","isAccessibleForFree":true,"image":"https://dualsense.studio/assets/dualsense-studio-cover.png","offers":{"@type":"Offer","price":0,"priceCurrency":"USD","url":"https://dualsense.studio/streamer.html"},"featureList":["Live 3D DualSense controller overlay for OBS","Custom camera angles and controller colors","Button highlight color and opacity","Stick direction arrows and optional L2/R2 meters","Transparent and chroma key backgrounds","Simulated input demo without a controller"]}]}</script>
+  <link rel="stylesheet" href="./controller/streamer.css?v=contact-1">
+  <link rel="stylesheet" href="./controller/stick-arrows.css?v=arrow-controls-2">
+  <link rel="stylesheet" href="./controller/streamer-showcase.css">
+  <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
+</head>
+<body class="streamer-setup">
+  <main class="streamer-shell">
+    <header class="streamer-header"><a data-analytics-destination="studio" data-analytics-placement="brand" class="studio-link" href="./"><img class="studio-logo" src="./assets/dualsense-studio-logo.png" width="56" height="56" alt=""><span>DUALSENSE STUDIO</span></a><a data-analytics-destination="studio" data-analytics-placement="header" class="back-link" href="./">Back to controller <span aria-hidden="true">↗</span></a></header>
+    <section class="streamer-intro"><div><p class="eyebrow"><span class="signal-dot"></span> MADE FOR YOUR STREAM</p><h1>Every input.<br><span>In the spotlight.</span></h1><p>A free 3D PS5 DualSense controller overlay for OBS. Make it yours, then bring it on stream.</p></div><span class="mode-tag">STREAMER MODE <span>01</span></span></section>
+    <noscript><p class="streamer-noscript">Enable JavaScript to customize the 3D overlay. You can still read the <a href="#obs-setup">OBS setup guide</a> and <a href="#streamer-help">connection help</a> below.</p></noscript>
+    <div class="streamer-workspace">
+      <section class="preview-panel" aria-label="Overlay preview">
+        <div class="preview-heading">
+          <div class="preview-summary"><span class="eyebrow">LIVE PREVIEW</span><span class="connection-status" id="input-status" role="status">Press a button on your controller</span></div>
+          <div class="preview-demo"><button type="button" id="demo" aria-pressed="false" aria-describedby="demo-note"><span id="demo-symbol" aria-hidden="true">▷</span><span id="demo-label">Try demo</span></button><span id="demo-note">No controller needed</span></div>
+        </div>
+        <div class="preview-stage checker" id="preview-stage"><canvas id="streamer-canvas" tabindex="0" aria-label="Live 3D controller overlay preview. Drag to rotate; Shift-drag to roll."></canvas><p class="model-loading" id="model-status" role="status">Loading your controller…</p><span class="preview-corner top-left"></span><span class="preview-corner bottom-right"></span></div>
+        <div class="preview-footer"><span id="background-label">TRANSPARENT BACKGROUND</span><div class="input-strip" aria-label="Live controller input"><span class="preview-trigger" hidden>L2 <meter id="preview-l2" min="0" max="1" value="0" aria-label="Left trigger"></meter></span><span id="preview-input">Waiting for input</span><span class="preview-trigger" hidden>R2 <meter id="preview-r2" min="0" max="1" value="0" aria-label="Right trigger"></meter></span></div></div>
+      </section>
+      <form class="settings-panel" id="streamer-settings">
+        <div class="settings-heading"><h2>Your signature look.</h2><button class="text-button" type="button" id="reset-settings" title="Reset all overlay settings">Reset</button></div>
+        <div class="settings-tabs" role="tablist" aria-label="Overlay settings">
+          <button type="button" role="tab" id="settings-tab-camera" data-settings-tab="camera" aria-controls="settings-panel-camera" aria-selected="true">Camera</button>
+          <button type="button" role="tab" id="settings-tab-appearance" data-settings-tab="appearance" aria-controls="settings-panel-appearance" aria-selected="false" tabindex="-1">Appearance</button>
+          <button type="button" role="tab" id="settings-tab-inputs" data-settings-tab="inputs" aria-controls="settings-panel-inputs" aria-selected="false" tabindex="-1">Inputs</button>
+        </div>
+        <div class="settings-tabpanel" role="tabpanel" id="settings-panel-camera" aria-labelledby="settings-tab-camera" aria-describedby="settings-description-camera">
+          <p class="settings-description" id="settings-description-camera">Choose your viewing angle and controller size.</p>
+          <fieldset><legend><span>Camera angle</span></legend><div class="segmented camera-options"><label class="camera-auto"><input type="radio" name="camera" value="auto" aria-labelledby="auto-camera-label" aria-describedby="auto-camera-tooltip"><span id="auto-camera-label">Auto</span><span class="camera-tooltip" id="auto-camera-tooltip" role="tooltip"><strong>Follows your inputs</strong>L2/R2 show the triggers, L1/R1 show the shoulders, and other buttons or sticks show the front.<br><br>Auto keeps the last angle when nothing is pressed. Drag the controller or choose another camera to keep a fixed view.</span></label><label><input type="radio" name="camera" value="front"><span>Front</span></label><label><input type="radio" name="camera" value="angle" checked><span>Angle</span></label><label><input type="radio" name="camera" value="back"><span>Back</span></label><label><input type="radio" name="camera" value="triggers"><span>Triggers</span></label><label><input type="radio" name="camera" value="custom"><span>Custom</span></label></div><p class="field-note">Drag the controller to set your angle. Shift-drag to roll. Choose Auto to follow button presses again.</p><div id="custom-camera" class="custom-camera" hidden><label class="range-label" for="camera-pitch">Tilt<output id="pitch-value">0°</output></label><input id="camera-pitch" name="pitch" type="range" min="-180" max="180" step="0.1" value="0"><label class="range-label" for="camera-yaw">Turn<output id="yaw-value">0°</output></label><input id="camera-yaw" name="yaw" type="range" min="-180" max="180" step="0.1" value="0"><label class="range-label" for="camera-roll">Roll<output id="roll-value">0°</output></label><input id="camera-roll" name="roll" type="range" min="-180" max="180" step="0.1" value="0"></div><label class="range-label" for="stream-scale">Size <output id="scale-value">100%</output></label><input id="stream-scale" name="scale" type="range" min="60" max="120" value="100"></fieldset>
+        </div>
+        <div class="settings-tabpanel" role="tabpanel" id="settings-panel-appearance" aria-labelledby="settings-tab-appearance" aria-describedby="settings-description-appearance" hidden>
+          <p class="settings-description" id="settings-description-appearance">Match the controller colors and background to your stream.</p>
+          <fieldset><legend><span>Colors</span></legend><div class="color-options"><label><input type="color" name="body" value="#e9eaf0"><span>Shell</span></label><label><input type="color" name="light" value="#0046ff"><span>Light</span></label></div><p class="field-note">Your overlay colors. Your physical controller stays as it is.</p></fieldset>
+          <fieldset><legend><span>Background</span></legend><div class="background-options"><label><input type="radio" name="background" value="transparent" checked><span><i class="checker"></i>Clear</span></label><label><input type="radio" name="background" value="green"><span><i style="background:#00ff00"></i>Green</span></label><label><input type="radio" name="background" value="blue"><span><i style="background:#0000ff"></i>Blue</span></label><label><input type="radio" name="background" value="solid"><span><i id="custom-background-swatch"></i>Custom</span></label></div><label class="custom-background" id="custom-background" hidden>Background color <input type="color" name="color" value="#111215"></label></fieldset>
+        </div>
+        <div class="settings-tabpanel" role="tabpanel" id="settings-panel-inputs" aria-labelledby="settings-tab-inputs" aria-describedby="settings-description-inputs" hidden>
+          <p class="settings-description" id="settings-description-inputs">Choose how button presses, stick movements, and trigger pressure appear.</p>
+          <fieldset class="highlight-settings"><legend><span>Button highlights</span></legend>
+          <label class="highlight-color">Pressed color <input type="color" name="highlight" value="#ffbf47" aria-label="Highlight color"></label>
+          <label class="range-label" for="highlight-opacity">Opacity <output id="highlight-opacity-value" for="highlight-opacity" aria-live="off">100%</output></label><input id="highlight-opacity" name="highlightOpacity" type="range" min="0" max="100" step="1" value="100" aria-label="Highlight opacity" aria-describedby="highlight-note">
+          <div class="range-ends" aria-hidden="true"><span>Off</span><span>Solid</span></div>
+          <p class="field-note" id="highlight-note">0% hides the tint. 100% uses the full color.</p>
+          <button id="preview-highlight" class="highlight-preview" type="button">Preview highlight <span aria-hidden="true">↗</span></button>
+        </fieldset>
+          <fieldset><legend><span>Stick arrows</span></legend><div id="streamer-arrows"></div></fieldset>
+          <fieldset class="trigger-meter-settings"><legend><span>Trigger meters</span></legend><label class="meter-toggle"><span>Show L2/R2 meters</span><input type="checkbox" role="switch" id="trigger-meters" name="triggerMeters" value="show" checked></label></fieldset>
+        </div>
+        <label class="controller-slot" for="stream-slot">Controller<select name="slot" id="stream-slot"><option value="auto">First available</option><option value="0">Player 1</option><option value="1">Player 2</option><option value="2">Player 3</option><option value="3">Player 4</option></select></label>
+      </form>
+    </div>
+    <div class="streamer-export">
+      <section class="export-panel" aria-labelledby="export-title">
+        <div class="export-copy">
+          <p class="eyebrow">READY FOR THE BIG SCREEN</p>
+          <h2 id="export-title">Bring it into OBS.</h2>
+          <p>Choose how to bring your controller into OBS.</p>
+        </div>
+        <div class="export-actions">
+          <div class="export-option"><button class="primary-button" type="button" id="copy-overlay" aria-describedby="obs-browser-description"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 4H6a2 2 0 0 0-2 2v9"/></svg>Copy OBS link</button><p id="obs-browser-description">Paste into an OBS Browser source.</p></div>
+          <div class="export-option"><a class="secondary-button" id="open-capture" href="./overlay.html#setup" aria-describedby="obs-capture-description">Open capture page <span aria-hidden="true">↗</span></a><p id="obs-capture-description">Open a page for window capture.<br>Opens in this tab.</p></div>
+        </div>
+        <p class="export-status" id="export-status" role="status"></p>
+        <label class="overlay-url-label" for="overlay-url">Your overlay link<input id="overlay-url" readonly spellcheck="false" aria-label="Your overlay link"></label>
+      </section>
+      <aside class="export-support" data-support hidden aria-labelledby="support-title">
+        <p class="eyebrow">MADE WITH YOUR SUPPORT</p>
+        <h2 id="support-title">Keep the studio growing.</h2>
+        <p class="support-description">Enjoying DualSense Studio? Help fund the next round of controller experiments.</p>
+        <div class="export-support-options">
+          <div data-support-provider="buymeacoffee" hidden>
+            <a class="coffee-button" data-support-link target="_blank" rel="noopener noreferrer"><img src="./assets/buy-me-a-coffee-yellow.svg" width="212" height="60" alt="Buy me a coffee"></a>
+            <small>One-time tip. No account needed.</small>
+          </div>
+        </div>
+        <p class="support-note">Optional support. Free to keep playing.</p>
+      </aside>
+    </div>
+    <section class="setup-guide" id="obs-setup" aria-label="OBS setup instructions">
+      <article><span class="guide-number">A</span><div><h3>OBS Browser Source <span class="guide-badge">TRANSPARENT</span></h3><ol><li>Copy your link. In OBS, add a <strong>Browser</strong> source and paste it into URL.</li><li>Set width to <strong>800</strong>, height to <strong>600</strong>, and frame rate to <strong>60</strong>.</li><li>Right-click the source → <strong>Interact</strong>. Click the controller, then press a button on your DualSense to activate input.</li></ol><p>Check that the buttons still respond after switching to your game. For touchpad finger tracking, or if input stops when switching apps, use the capture-window method.</p></div></article>
+      <article><span class="guide-number">B</span><div><h3>Browser window capture <span class="guide-badge">DIRECT CONNECTION</span></h3><ol><li>Choose <strong>Green</strong> or <strong>Blue</strong> above, then open the capture window in desktop Chrome or Edge.</li><li>Click <strong>Connect DualSense</strong> and select your controller. Hide the setup panel once live input works.</li><li>In OBS, capture that browser window, crop its borders, and add a <strong>Chroma Key</strong> filter matching your background.</li></ol><p>Keep the capture window open and unminimized. Direct input continues when your game has focus. USB is the simplest connection.</p></div></article>
+    </section>
+    <section class="streamer-showcase" id="streamer-showcase" aria-labelledby="showcase-title">
+      <div class="showcase-heading">
+        <div><p class="eyebrow">ON YOUR STREAM</p><h2 id="showcase-title">Streamers using DualSense Studio.</h2><p>Using the overlay on your stream? Share your channel and we may feature it here.</p></div>
+        <button type="button" class="secondary-button" data-showcase-toggle aria-expanded="false" aria-controls="showcase-panel">Add your channel</button>
+      </div>
+      <ul class="showcase-list" data-showcase-list aria-label="Featured streamer channels" hidden></ul>
+      <div class="showcase-empty" data-showcase-empty hidden><strong>Your stream could be the first.</strong><p>Share your channel for a chance to be featured. Approved channels will appear here.</p></div>
+      <p class="showcase-status" data-showcase-status role="status">Loading featured channels…</p>
+      <button type="button" class="text-button showcase-retry" data-showcase-retry hidden>Try again</button>
+      <div class="showcase-panel" id="showcase-panel" data-showcase-panel hidden>
+        <form class="showcase-form" aria-label="Submit your streaming channel">
+          <label for="showcase-name">Streamer name<input id="showcase-name" name="name" type="text" autocomplete="nickname" required minlength="2" maxlength="40" placeholder="Your channel name"></label>
+          <label for="showcase-url">Channel URL<input id="showcase-url" name="channelUrl" type="text" inputmode="url" autocapitalize="off" spellcheck="false" required maxlength="300" placeholder="https://twitch.tv/yourchannel" aria-describedby="showcase-platforms"><small id="showcase-platforms">Twitch, YouTube (@handle or /channel/), or Kick.</small></label>
+          <label hidden aria-hidden="true">Leave this empty<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+          <label class="showcase-consent"><input name="consent" type="checkbox" required><span>I use DualSense Studio on my stream and agree to have my streamer name and channel link shown here.</span></label>
+          <div class="showcase-submit"><button type="submit" class="primary-button">Submit for review</button><p>Every submission is reviewed before appearing. Only your streamer name and channel link will be public.</p></div>
+          <p class="showcase-submit-status" data-showcase-submit-status role="status"></p>
+        </form>
+      </div>
+      <noscript><p class="showcase-status">Enable JavaScript to browse featured channels or submit your own. You can also reach out to <a href="https://x.com/SafaElmali" target="_blank" rel="noopener noreferrer">@SafaElmali on X</a>.</p></noscript>
+    </section>
+    <section class="streamer-help" id="streamer-help" aria-labelledby="streamer-help-title">
+      <div class="streamer-help-intro">
+        <p class="eyebrow">BEFORE YOU GO LIVE</p>
+        <h2 id="streamer-help-title">Your PS5 controller overlay for OBS.</h2>
+        <p>Show your button presses, stick movements, and trigger pressure in a live 3D overlay. Here’s how to make it part of your stream.</p>
+        <p class="contact-note">Questions or feedback?<br><a href="https://x.com/SafaElmali" target="_blank" rel="noopener noreferrer" data-analytics-destination="x" data-analytics-placement="help">Reach out to @SafaElmali on X <span aria-hidden="true">↗</span></a></p>
+      </div>
+      <div class="streamer-help-answers">
+        <details data-help-topic="pricing"><summary>Is the DualSense OBS overlay free?</summary><p>Yes. Streamer mode is free to use, with no account or membership required. Tips through Buy Me a Coffee are optional.</p></details>
+        <details data-help-topic="obs_setup"><summary>How do I add the controller overlay to OBS?</summary><p>Choose your look, select Copy OBS link, and paste it into an OBS Browser source. Start with a width of 800, a height of 600, and 60 frames per second. Open Interact and press a controller button to activate input. The <a href="#obs-setup" data-analytics-destination="obs_setup" data-analytics-placement="help">setup guide above</a> also explains browser window capture.</p></details>
+        <details data-help-topic="transparent_background"><summary>Can I use a transparent background?</summary><p>Choose Clear and use an OBS Browser source for a transparent overlay. For browser window capture, choose Green or Blue, then add a matching Chroma Key filter in OBS.</p></details>
+        <details data-help-topic="customization"><summary>What can I customize?</summary><p>Set the camera angle and controller size, shell and light colors, button highlight color and opacity, and background. Show or hide stick arrows and L2/R2 trigger meters, then copy the OBS link to keep your settings.</p></details>
+        <details data-help-topic="demo"><summary>Can I preview the overlay without a controller?</summary><p>Yes. Select Try demo above the preview to see simulated button presses, stick movements, and trigger pressure. A connected controller is needed to show your own live inputs.</p></details>
+        <details data-help-topic="compatibility"><summary>Which controller and browser should I use?</summary><p>This overlay is designed for a PS5 DualSense connected over USB or Bluetooth. For touchpad finger tracking, or if OBS Browser source input stops when your game has focus, open the capture page in desktop Chrome or Edge and select Connect DualSense. Keep that window open and unminimized. You can also <a href="./#about" data-analytics-destination="studio" data-analytics-placement="help">test your controller’s inputs in the studio</a>.</p></details>
+      </div>
+    </section>
+    <footer class="streamer-footer"><span>Independent project · Not affiliated with Sony or OBS.</span><span>3D model by <a href="https://sketchfab.com/3d-models/ps5-controller-b7bb9c5102a04cb0b1966c6d02bad7d6" target="_blank" rel="noopener">Taohid Animation</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · Adapted for interaction.</span></footer>
+  </main>
+  <script type="module" src="./controller/streamer-app.js?v=showcase-1"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@ import { readFile, stat } from 'node:fs/promises';
 // Run against the publish folder, so a source-only fix cannot pass this check.
 const root = new URL('../dist/', import.meta.url);
 const origin = 'https://dualsense.studio';
-const pages = ['index.html'];
+const pages = ['index.html', 'streamer.html'];
 const read = path => readFile(new URL(path, root), 'utf8');
 const attributes = tag => Object.fromEntries([...tag.matchAll(/([\w:-]+)="([^"]*)"/g)].map(([, k, v]) => [k, v]));
 const tags = (html, name) => [...html.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'g'))].map(([tag]) => attributes(tag));
@@ -35,7 +35,7 @@ test('each public landing page has one clean canonical, unique metadata and a cr
   assert.equal(descriptions.size, pages.length);
 });
 
-test('social previews use a real 1200×630 PNG with accessible descriptions', async () => {
+test('social previews use real wide PNGs with accurate dimensions and accessible descriptions', async () => {
   for (const page of pages) {
     const html = await read(page), url = new URL(meta(html, 'og:image'));
     assert.equal(url.origin, origin);
@@ -46,19 +46,23 @@ test('social previews use a real 1200×630 PNG with accessible descriptions', as
     assert.equal(png.subarray(1, 4).toString(), 'PNG');
     assert.equal(png.readUInt32BE(16), Number(meta(html, 'og:image:width')));
     assert.equal(png.readUInt32BE(20), Number(meta(html, 'og:image:height')));
-    assert.equal(png.readUInt32BE(16), 1200); assert.equal(png.readUInt32BE(20), 630);
-    assert.ok(png.length < 300_000, 'Social preview should remain lightweight');
+    const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+    assert.ok(width >= 1200 && height >= 600, 'Large sharing cards need sufficient image resolution');
+    assert.ok(width / height >= 1.8 && width / height <= 2, 'Sharing image should have a wide card aspect ratio');
+    // The Streamer page uses the approved illustrated PNG cover; the homepage uses a simpler graphic.
+    const budget = page === 'streamer.html' ? 2_000_000 : 300_000;
+    assert.ok(png.length < budget, `${page}: social preview exceeds its image budget`);
   }
 });
 
-test('sitemap includes only the public homepage and excludes the error page', async () => {
+test('sitemap includes exactly indexable destinations; capture stays crawlable but noindex', async () => {
   const urls = await sitemapUrls();
-  assert.deepEqual(urls, [origin + '/']);
+  assert.deepEqual(urls, [origin + '/', origin + '/streamer.html']);
   const robots = await read('robots.txt');
   assert.match(robots, /User-agent: \*/);
   assert.match(robots, /Sitemap: https:\/\/dualsense\.studio\/sitemap\.xml/);
   assert.doesNotMatch(robots, /Disallow:\s*\/(?:\s|$)|Disallow:.*(?:overlay|controller|assets)/m);
-  for (const page of ['404.html']) {
+  for (const page of ['overlay.html', '404.html']) {
     const html = await read(page);
     assert.match(meta(html, 'robots'), /noindex/);
     assert.ok(!urls.includes(origin + '/' + page));
@@ -89,7 +93,7 @@ test('structured data describes the actual app and agrees with canonical page id
 });
 
 test('all static local links, assets and fragment targets survive the build', async () => {
-  for (const page of [...pages, '404.html']) {
+  for (const page of [...pages, 'overlay.html', '404.html']) {
     const html = await read(page), base = new URL(page, origin + '/');
     const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id);
     assert.equal(new Set(ids).size, ids.length, `${page}: duplicate element ID`);
@@ -110,4 +114,24 @@ test('essential feature descriptions and honest limitations are present without 
   assert.ok(html);
   for (const text of ['stick drift', 'Controller diagnostics', 'touchpad', 'gyro', 'Chrome or Edge', 'does not repair', 'not affiliated']) assert.ok(html.includes(text), text);
   assert.match(await read('index.html'), /<noscript>/);
+});
+
+test('Streamer search content explains setup and the free offer in the published HTML', async () => {
+  const html = await read('streamer.html');
+  const help = html.match(/<section class="streamer-help"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(help, 'Setup help must be readable before the 3D app loads');
+  for (const text of ['free to use', 'OBS Browser source', 'Chroma Key', 'Try demo', 'Chrome or Edge', 'USB or Bluetooth', 'L2/R2']) assert.ok(help.includes(text), text);
+  assert.ok([...help.matchAll(/<details\b[^>]*>/g)].length >= 5);
+  assert.match(html, /<noscript>[\s\S]*?href="#obs-setup"/);
+  assert.match(await read('index.html'), /href="\.\/streamer\.html"/);
+  const data = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  const app = data['@graph'].find(item => item['@type'] === 'WebApplication');
+  const webPage = data['@graph'].find(item => item['@type'] === 'WebPage');
+  assert.equal(app.isAccessibleForFree, true);
+  assert.equal(app.offers.price, 0);
+  assert.equal(app.offers.url, canonical(html)[0].href);
+  assert.equal(app.image, meta(html, 'og:image'));
+  assert.equal(webPage.primaryImageOfPage.url, app.image);
+  assert.equal(webPage.primaryImageOfPage.width, Number(meta(html, 'og:image:width')));
+  assert.equal(webPage.primaryImageOfPage.height, Number(meta(html, 'og:image:height')));
 });

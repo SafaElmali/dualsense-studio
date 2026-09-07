@@ -3,7 +3,8 @@
 import { GyroOrientation } from './gyro-orientation.js';
 
 export class GyroInput {
-  constructor(onMotion = () => {}, onStatus = () => {}, now = () => performance.now()) {
+  constructor(onMotion = () => {}, onStatus = () => {}, now = () => performance.now(), onAction = () => {}) {
+    this.onAction = onAction;
     this.onMotion = onMotion; this.onStatus = onStatus; this.now = now;
     this.orientation = new GyroOrientation();
     this.generation = 0; this.device = null; this.enabled = false; this.paused = false; this.scale = null; this.bias = [0, 0, 0]; this.previous = null; this.measurement = null;
@@ -15,12 +16,12 @@ export class GyroInput {
       if (!this.received) { this.received = true; this.onStatus('Gyro connected. Rotate the controller, or play target practice to aim with motion.'); }
       if (this.measurement) {
         const m = this.measurement;
-        if (sample.rates.some(value => Math.abs(value) > 8)) { this.measurement = null; this.orientation.realign(); this.onStatus('Controller moved. Put it on a stable surface and try Recenter again.'); return; }
+        if (sample.rates.some(value => Math.abs(value) > 8)) { this.measurement = null; this.onAction('gyro', 'recenter_failed'); this.orientation.realign(); this.onStatus('Controller moved. Put it on a stable surface and try Recenter again.'); return; }
         sample.rates.forEach((value, i) => { m.sums[i] += value; m.min[i] = Math.min(m.min[i], value); m.max[i] = Math.max(m.max[i], value); }); m.count++;
         if (this.now() - m.start >= 1500 && m.count >= 30) {
           this.measurement = null;
-          if (m.max.some((value, i) => value - m.min[i] > 1.5)) { this.orientation.realign(); this.onStatus('Controller moved. Keep it still and try Recenter again.'); return; }
-          this.bias = m.sums.map(sum => sum / m.count); this.orientation.reset();
+          if (m.max.some((value, i) => value - m.min[i] > 1.5)) { this.onAction('gyro', 'recenter_failed'); this.orientation.realign(); this.onStatus('Controller moved. Keep it still and try Recenter again.'); return; }
+          this.bias = m.sums.map(sum => sum / m.count); this.orientation.reset(); this.onAction('gyro', 'recentered');
           this.onStatus('Gyro centered. Pick up your controller; the model now follows its tilt.');
         }
         this.previous = null; return;
@@ -69,14 +70,16 @@ export class GyroInput {
     finally { clearTimeout(timeout); }
     return device === this.device && this.enabled && generation === this.generation;
   }
-  setEnabled(enabled) { this.generation++; this.enabled = enabled; this.previous = null; this.measurement = null; this.orientation.reset(); }
+  setEnabled(enabled) { if (this.measurement) this.onAction('gyro', 'recenter_cancelled'); this.generation++; this.enabled = enabled; this.previous = null; this.measurement = null; this.orientation.reset(); }
   setPaused(paused) {
     if (this.paused === paused) return;
     this.paused = paused; this.previous = null; this.orientation.realign();
-    if (this.measurement) { this.measurement = null; this.onStatus('Centering paused. Return and choose Recenter again.'); }
+    if (this.measurement) { this.measurement = null; this.onAction('gyro', 'recenter_cancelled'); this.onStatus('Centering paused. Return and choose Recenter again.'); }
   }
   recenter() {
     if (!this.enabled || !this.device) return false;
+    if (this.measurement) this.onAction('gyro', 'recenter_cancelled');
+    this.onAction('gyro', 'recenter_started');
     this.previous = null; this.measurement = { start: this.now(), sums: [0, 0, 0], min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity], count: 0 };
     this.onStatus('Place it flat with the USB port pointing toward your screen. Keep still for 1.5 seconds…'); return true;
   }

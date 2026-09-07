@@ -10,6 +10,7 @@ export class TouchDrawingView {
     this.pointerContacts = new Map();
     this.$('drawing-close').addEventListener('click', () => this.dialog.close());
     this.dialog.addEventListener('close', () => { this.end(); this.onClose(); });
+    this.$('drawing-color').addEventListener('change', () => this.onAction('touchpad_drawing', 'color_changed'));
     this.$('drawing-clear').addEventListener('click', () => { this.end(); this.model.clear(); this.draw(); this.message('Canvas cleared.'); this.onAction('touchpad_drawing', 'cleared'); });
     this.$('drawing-save').addEventListener('click', async () => {
       const exported = document.createElement('canvas'); exported.width = 1200; exported.height = 735;
@@ -20,8 +21,9 @@ export class TouchDrawingView {
     this.$('drawing-connect').disabled = !navigator.hid;
     this.$('drawing-connect').addEventListener('click', async () => {
       this.$('drawing-connect').disabled = true;
-      try { await onConnect(); }
-      catch (error) { this.message(error.message); }
+      this.onAction('touchpad_drawing', 'connect_requested');
+      try { const connected = await onConnect(); this.onAction('touchpad_drawing', connected ? 'connect_succeeded' : 'connect_cancelled'); }
+      catch (error) { this.message(error.message); this.onAction('touchpad_drawing', error.name === 'NotAllowedError' ? 'connect_cancelled' : 'connect_failed'); }
       finally { this.$('drawing-connect').disabled = !navigator.hid; }
     });
     this.canvas.addEventListener('pointerdown', event => {
