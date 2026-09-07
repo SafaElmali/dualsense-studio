@@ -5,13 +5,14 @@ import { supportUrls } from './support-config.js?v=coffee-only-1';
 import { DualSenseView } from './controller-view.js?v=performance-1';
 import { ControllerInput } from './input-state.js';
 import { InputCamera } from './input-camera.js';
-import { StreamerInput } from './streamer-input.js';
+import { StreamerInput } from './streamer-input.js?v=gyro-1';
 import { StreamerDemo } from './streamer-demo.js?v=feature-events-1';
-import { StreamerSettings } from './streamer-settings.js?v=arrow-controls-2';
+import { StreamerSettings } from './streamer-settings.js?v=gyro-1';
 import { StreamerRotation } from './streamer-rotation.js';
+import { StreamerMotion } from './streamer-motion.js';
 import { AppEvents } from './app-events.js';
 import { StreamerShowcaseView } from './streamer-showcase.js?v=channel-profiles-1';
-import { StreamerBuilderView } from './streamer-builder-view.js?v=builder-2';
+import { StreamerBuilderView } from './streamer-builder-view.js?v=gyro-1';
 
 const $ = id => document.getElementById(id);
 const capture = document.body.classList.contains('streamer-overlay');
@@ -36,12 +37,17 @@ const inputCamera = new InputCamera(angle => {
 });
 const stage = $(capture ? 'capture-stage' : 'preview-stage');
 const canvas = $('streamer-canvas');
+const motion = new StreamerMotion();
 const rotation = new StreamerRotation({
   onChange: angles => {
-    settings = StreamerSettings.normalize({ ...settings, ...angles, camera: 'custom' });
+    settings = StreamerSettings.normalize({ ...settings, ...angles, camera: 'custom', gyro: 'off' });
+    source.setGyroEnabled(false);
+    motion.configure('off', StreamerRotation.toPose(settings));
+    view.setGyroEnabled(false);
     inputCamera.setEnabled(false);
     view.pose = StreamerRotation.toPose(settings);
     if (form) { fillSettings(); renderCameraControls(); }
+    renderMotion();
     updateLinks();
   },
   onCommit: () => {
@@ -111,6 +117,12 @@ const source = new StreamerInput(input, {
   hid: navigator.hid,
   getGamepads: () => navigator.getGamepads?.() || [],
   onTouch: contacts => view?.setTouchContacts('hardware', contacts),
+  onMotion: sample => {
+    if (!view?.ready || rotation.gesture) return;
+    const orientation = motion.update(sample);
+    if (orientation) view.motion({ orientation });
+    if (capture && $('recenter-motion').disabled && orientation) renderMotion();
+  },
   onStatus: state => {
     const connected = ['gamepad', 'direct'].includes(state);
     $('input-status').dataset.connected = String(connected);
@@ -127,20 +139,25 @@ const source = new StreamerInput(input, {
     if (capture) {
       $('connect-direct').textContent = source.device ? 'Disconnect direct input' : 'Connect DualSense';
       $('touch-capability').textContent = state === 'direct' ? 'Touchpad finger tracking is connected. Slide a finger without pressing down.' : 'Normal controller input includes the touchpad click. For finger tracking, use Connect DualSense in a Chrome or Edge capture window.';
+      motion.reset();
+      applySettings();
     }
   },
 });
 
 function applySettings() {
+  source.setGyroEnabled(capture && settings.gyro !== 'off');
   source.slot = settings.slot;
   triggerDisplay.hidden = settings.triggerMeters === 'hide';
   $('trigger-meters').checked = settings.triggerMeters === 'show';
-  inputCamera.setEnabled(settings.camera === 'auto');
+  inputCamera.setEnabled(settings.camera === 'auto' && !source.gyro.enabled);
   if (view?.ready) {
     if (settings.camera === 'custom') view.pose = StreamerRotation.toPose(settings);
     // Streamers need both face inputs and the trigger caps visible at rest.
-    else if (settings.camera === 'angle') view.pose = StreamerRotation.toPose({ pitch: 40, yaw: -4, roll: 0 });
+    else if (settings.camera === 'angle' || (settings.camera === 'auto' && source.gyro.enabled)) view.pose = StreamerRotation.toPose({ pitch: 40, yaw: -4, roll: 0 });
     else if (!inputCamera.enabled) view.setView(settings.camera, { resetZoom: false });
+    motion.configure(source.gyro.enabled ? settings.gyro : 'off', view.pose);
+    view.setGyroEnabled(source.gyro.enabled && settings.gyro === 'full');
     view.zoom = .88 * settings.scale / 100;
     view.resize();
     view.setBodyColor(settings.body);
@@ -151,6 +168,7 @@ function applySettings() {
   stage.style.backgroundColor = StreamerSettings.background(settings);
   stage.style.setProperty('--input-highlight', settings.highlight);
   updateLinks();
+  renderMotion();
   if (capture) return;
   document.querySelectorAll('.preview-trigger').forEach(element => { element.hidden = settings.triggerMeters === 'show'; });
   arrowControls.render(settings);
@@ -163,6 +181,19 @@ function applySettings() {
   $('custom-background').hidden = settings.background !== 'solid';
   $('custom-background-swatch').style.background = settings.color;
   builder?.render(settings);
+}
+
+function renderMotion() {
+  if (!capture) return;
+  const supported = !!navigator.hid && window.isSecureContext;
+  $('gyro-mode').value = settings.gyro;
+  $('gyro-mode').disabled = !supported;
+  $('recenter-motion').disabled = !motion.latest || !source.gyro.enabled || source.state !== 'direct';
+  $('motion-status').textContent = !supported ? 'Gyro needs a Chrome or Edge capture window. Use Window Capture in OBS.'
+    : settings.gyro === 'off' ? 'Follow your controller with smooth movement. Subtle keeps inputs in view; Full follows every turn.'
+    : !source.device ? 'Choose Connect DualSense above to start gyro movement.'
+    : !motion.latest ? 'Waiting for motion data. Hold the controller comfortably. If this continues, try a USB data cable.'
+    : `${settings.gyro === 'subtle' ? 'Subtle' : 'Full'} gyro is live. Recenter sets your current holding position as neutral.`;
 }
 
 function updateLinks() {
@@ -194,6 +225,20 @@ function fillSettings() {
 
 if (capture) {
   track('capture_loaded');
+  $('gyro-mode').addEventListener('change', () => {
+    settings = StreamerSettings.normalize({ ...settings, gyro: $('gyro-mode').value });
+    applySettings();
+    saveSettings();
+    analytics.streamerSettingChanged('gyro', settings.gyro, surface);
+  });
+  $('recenter-motion').addEventListener('click', () => {
+    if (source.state !== 'direct') return;
+    const orientation = motion.recenter();
+    if (!orientation) return;
+    view.motion({ orientation });
+    $('motion-status').textContent = 'Centered. Your current holding position now matches your chosen camera angle.';
+    track('gyro_recentered');
+  });
   $('trigger-meters').addEventListener('change', () => {
     settings = StreamerSettings.normalize({ ...settings, triggerMeters: $('trigger-meters').checked ? 'show' : 'hide' });
     applySettings();
@@ -277,7 +322,11 @@ if (capture) {
   fillSettings();
   builder = new StreamerBuilderView(document, {
     getSettings: () => settings,
-    onApply: next => { settings = StreamerSettings.normalize(next); fillSettings(); applySettings(); saveSettings(); },
+    onApply: next => {
+      settings = StreamerSettings.normalize(next);
+      if (settings.gyro !== 'off') builder.obsMethod = 'window';
+      fillSettings(); applySettings(); saveSettings();
+    },
     onExportChange: updateLinks,
     onAction: track,
   });
@@ -299,6 +348,7 @@ if (capture) {
     const next = StreamerSettings.normalize({ ...settings, ...Object.fromEntries(new FormData(form)), triggerMeters: $('trigger-meters').checked ? 'show' : 'hide' });
     if (next.camera === 'custom' && settings.camera !== 'custom' && view?.ready) Object.assign(next, StreamerRotation.fromPose(view.pose));
     settings = next;
+    if (event.target.name === 'gyro' && settings.gyro !== 'off') builder.obsMethod = 'window';
     fillSettings();
     applySettings();
     if (['highlight', 'highlightOpacity'].includes(event.target.name)) view?.previewHighlights();

@@ -8,7 +8,7 @@ export class StreamerBuilderView {
     this.onApply = onApply;
     this.onExportChange = onExportChange;
     this.onAction = onAction;
-    this.obsMethod = 'browser';
+    this.obsMethod = ['subtle', 'full'].includes(getSettings().gyro) ? 'window' : 'browser';
     this.chroma = 'green';
     this.inputState = 'waiting';
     this.previousSettings = null;
@@ -166,7 +166,7 @@ export class StreamerBuilderView {
     this.$('open-capture').hidden = this.obsMethod !== 'window';
     this.$('copy-overlay').textContent = this.obsMethod === 'browser' ? 'Copy OBS link' : 'Copy capture link';
     this.$('obs-background-note').textContent = this.obsMethod === 'browser'
-      ? 'Your OBS link uses a transparent background. Your look stays the same.'
+      ? (this.getSettings().gyro !== 'off' ? 'Gyro movement needs Browser window capture. This Browser Source link supports normal controller input.' : 'Your OBS link uses a transparent background. Your look stays the same.')
       : `Your capture link uses a ${this.chroma} background. Match it with a Chroma Key filter in OBS.`;
     const status = this.$('obs-input-check');
     status.dataset.connected = String(['gamepad', 'direct'].includes(this.inputState));

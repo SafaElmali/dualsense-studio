@@ -30,9 +30,9 @@ function fixture() {
 }
 
 test('looks normalize names and allowlist settings without publishing device or capture preferences', () => {
-  const look = CommunityLook.normalize({ ...submission('  Çağrı   Blue  '), settings: { ...StreamerSettings.defaults, body: '#AABBCC', slot: '3', background: 'solid', color: '#abcdef', url: 'private' }, id: 'private', device: 'private' });
+  const look = CommunityLook.normalize({ ...submission('  Çağrı   Blue  '), settings: { ...StreamerSettings.defaults, body: '#AABBCC', slot: '3', background: 'solid', color: '#abcdef', gyro: 'full', url: 'private' }, id: 'private', device: 'private' });
   assert.equal(look.name, 'Çağrı Blue'); assert.equal(look.settings.body, '#aabbcc');
-  for (const key of ['slot', 'background', 'color', 'url']) assert.equal(Object.hasOwn(look.settings, key), false);
+  for (const key of ['slot', 'background', 'color', 'gyro', 'url']) assert.equal(Object.hasOwn(look.settings, key), false);
   assert.deepEqual(Object.keys(look), ['name', 'creator', 'settings']);
   for (const name of ['', 'a', 'a'.repeat(33), '<script>alert(1)</script>', 'name\u202eevil', null, {}]) assert.throws(() => CommunityLook.normalize(submission(name)));
   for (const settings of [null, [], {}, { ...StreamerSettings.defaults, body: 'url(https://evil.test)' }]) assert.throws(() => CommunityLook.normalize({ ...submission(), settings }));

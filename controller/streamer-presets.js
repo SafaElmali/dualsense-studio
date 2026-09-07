@@ -13,7 +13,7 @@ export class StreamerPresets {
   static applyLook(id, current) {
     const look = this.looks.find(item => item.id === id);
     if (!look) throw new Error('Choose an available look.');
-    return StreamerSettings.normalize({ ...this.lookSettings(look), slot: current.slot, background: current.background, color: current.color });
+    return StreamerSettings.normalize({ ...this.lookSettings(look), slot: current.slot, background: current.background, color: current.color, gyro: current.gyro });
   }
 
   static lookSettings(look) { return StreamerSettings.normalize(look.settings); }

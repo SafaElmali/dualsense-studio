@@ -23,8 +23,8 @@ export class CommunityLook {
       if (typeof body.settings[key] !== 'string' || !/^#[\da-f]{6}$/i.test(body.settings[key])) throw new CommunityLookError('Choose valid colors for your look.');
     }
     const settings = StreamerSettings.normalize(body.settings);
-    // Controller slots and capture backgrounds belong to each viewer's setup.
-    for (const key of ['slot', 'background', 'color']) delete settings[key];
+    // Controller selection, motion and capture backgrounds belong to each viewer's setup.
+    for (const key of ['slot', 'background', 'color', 'gyro']) delete settings[key];
     return { name, creator, settings };
   }
 

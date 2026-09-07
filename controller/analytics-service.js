@@ -17,8 +17,8 @@ export class ControllerAnalytics {
       saved_look_applied: ['surface'], saved_look_removed: ['surface'], settings_restored: ['surface'],
       scene_preview_changed: ['surface', 'preview_mode'],
       camera_help_viewed: ['surface'],
-      tab_selected: ['surface', 'tab'],
-      opened: ['surface'], settings_changed: ['surface', 'setting', 'camera', 'background', 'enabled', 'opacity', 'scale', 'selection', 'size', 'color_mode'], settings_reset: ['surface'],
+      tab_selected: ['surface', 'tab'], gyro_recentered: ['surface'],
+      opened: ['surface'], settings_changed: ['surface', 'setting', 'camera', 'background', 'enabled', 'opacity', 'scale', 'selection', 'size', 'color_mode', 'gyro'], settings_reset: ['surface'],
       arrows_previewed: ['surface'], camera_rotated: ['surface'], highlight_previewed: ['surface'], demo_started: ['surface'], demo_stopped: ['surface', 'reason'],
       link_copied: ['surface', 'method'], copy_failed: ['surface'], capture_opened: ['surface'], capture_loaded: ['surface'],
       setup_opened: ['surface'], setup_closed: ['surface'], editor_opened: ['surface'],
@@ -77,7 +77,8 @@ export class ControllerAnalytics {
     tab: ['camera', 'appearance', 'inputs'],
     provider: ['patreon', 'buymeacoffee'],
     surface: ['builder', 'capture', 'studio', 'target_practice'],
-    setting: ['stickArrows', 'arrowSize', 'arrowColor', 'camera', 'pitch', 'yaw', 'roll', 'triggerMeters', 'body', 'light', 'highlight', 'highlightOpacity', 'background', 'color', 'scale', 'slot'],
+    setting: ['stickArrows', 'arrowSize', 'arrowColor', 'camera', 'pitch', 'yaw', 'roll', 'gyro', 'triggerMeters', 'body', 'light', 'highlight', 'highlightOpacity', 'background', 'color', 'scale', 'slot'],
+    gyro: ['off', 'subtle', 'full'],
     camera: ['auto', 'front', 'angle', 'back', 'triggers', 'custom'], background: ['transparent', 'green', 'blue', 'solid'],
     color_mode: ['auto', 'custom'],
     selection: ['auto', '0', '1', '2', '3'], input_mode: ['gamepad', 'direct'],
@@ -153,7 +154,7 @@ export class ControllerAnalytics {
   streamerSettingChanged(setting, value, surface) {
     if (!ControllerAnalytics.propertyValues.setting.includes(setting)) return;
     const properties = { setting, surface };
-    if (['camera', 'background', 'scale'].includes(setting)) properties[setting] = value;
+    if (['camera', 'background', 'scale', 'gyro'].includes(setting)) properties[setting] = value;
     else if (setting === 'highlightOpacity') properties.opacity = value;
     else if (setting === 'arrowSize') properties.size = value;
     else if (setting === 'arrowColor') properties.color_mode = value === 'auto' ? 'auto' : 'custom';

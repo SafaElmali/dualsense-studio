@@ -3,7 +3,7 @@ import { ButtonHighlight } from './button-highlight.js';
 
 // One portable, validated configuration for the preview and capture page.
 export class StreamerSettings {
-  static defaults = Object.freeze({ ...StickArrowSettings.defaults, camera: 'custom', pitch: 40, yaw: -0.8, roll: 0, triggerMeters: 'show', body: '#e9eaf0', light: '#0046ff', highlight: ButtonHighlight.defaults.color, highlightOpacity: ButtonHighlight.defaults.opacity, background: 'transparent', color: '#111215', scale: 75, slot: 'auto' });
+  static defaults = Object.freeze({ ...StickArrowSettings.defaults, camera: 'custom', pitch: 40, yaw: -0.8, roll: 0, gyro: 'off', triggerMeters: 'show', body: '#e9eaf0', light: '#0046ff', highlight: ButtonHighlight.defaults.color, highlightOpacity: ButtonHighlight.defaults.opacity, background: 'transparent', color: '#111215', scale: 75, slot: 'auto' });
 
   static normalize(values = {}) {
     const result = { ...this.defaults, ...StickArrowSettings.normalize(values) };
@@ -12,6 +12,7 @@ export class StreamerSettings {
     }
     if (['auto', 'front', 'angle', 'back', 'triggers', 'custom'].includes(values.camera)) result.camera = values.camera;
     if (['show', 'hide'].includes(values.triggerMeters)) result.triggerMeters = values.triggerMeters;
+    if (['off', 'subtle', 'full'].includes(values.gyro)) result.gyro = values.gyro;
     for (const axis of ['pitch', 'yaw', 'roll']) {
       const value = String(values[axis] ?? '').trim();
       if (value !== '' && Number.isFinite(Number(value))) result[axis] = Math.round(Math.max(-180, Math.min(180, Number(value))) * 10) / 10;

@@ -33,7 +33,7 @@ test('every Streamer form control has a distinct, bounded analytics setting', as
   assert.ok(html);
   const names = new Set([...html.matchAll(/<(?:input|select)[^>]*\bname="([^"]+)"/g)].map(match => match[1]));
   for (const name of names) assert.ok(ControllerAnalytics.propertyValues.setting.includes(name), `${name} is missing from setting analytics`);
-  assert.equal(names.size, 13);
+  assert.equal(names.size, 14);
 });
 
 test('highlight customization records its target, bounded opacity and previews without raw colors', () => {

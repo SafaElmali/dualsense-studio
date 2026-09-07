@@ -11,7 +11,7 @@ function storage() {
 
 test('named looks persist a complete normalized overlay across visits without unrelated data', () => {
   const saved = storage();
-  const settings = StreamerSettings.normalize({ camera: 'custom', pitch: 21.7, yaw: -76, roll: 11, highlightOpacity: 0, stickArrows: 'hide', triggerMeters: 'hide', slot: '2', background: 'blue' });
+  const settings = StreamerSettings.normalize({ camera: 'custom', pitch: 21.7, yaw: -76, roll: 11, highlightOpacity: 0, stickArrows: 'hide', triggerMeters: 'hide', slot: '2', background: 'blue', gyro: 'full' });
   const record = new StreamerPresets(saved).save('  Friday   night  ', { ...settings, scene: 'night', secret: 'not-an-overlay-setting' });
   assert.equal(record.name, 'Friday night');
   assert.deepEqual(new StreamerPresets(saved).list(), [{ ...record, settings }]);
@@ -55,10 +55,10 @@ test('malformed saved data cannot become unsafe settings or silently overwrite b
 });
 
 test('ready-made looks coordinate the overlay without changing the selected controller or capture background', () => {
-  const current = StreamerSettings.normalize({ slot: '3', background: 'solid', color: '#abcdef', camera: 'custom', pitch: 45 });
+  const current = StreamerSettings.normalize({ slot: '3', background: 'solid', color: '#abcdef', camera: 'custom', pitch: 45, gyro: 'subtle' });
   for (const look of StreamerPresets.looks) {
     const applied = StreamerPresets.applyLook(look.id, current);
-    assert.equal(applied.slot, '3'); assert.equal(applied.background, 'solid'); assert.equal(applied.color, '#abcdef');
+    assert.equal(applied.gyro, 'subtle'); assert.equal(applied.slot, '3'); assert.equal(applied.background, 'solid'); assert.equal(applied.color, '#abcdef');
     assert.equal(applied.body, look.settings.body); assert.equal(applied.camera, look.settings.camera);
   }
   const minimal = StreamerPresets.applyLook('minimal', current);
