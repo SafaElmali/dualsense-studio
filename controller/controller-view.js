@@ -4,9 +4,10 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { ButtonHighlight } from './button-highlight.js?v=stick-feedback-1';
+import { MeshBVH, acceleratedRaycast } from './vendor/three-mesh-bvh/index.module.min.js';
 
 export class DualSenseView {
-  constructor(canvas, input) {
+  constructor(canvas, input, { pauseWhenOffscreen = false } = {}) {
     this.canvas = canvas;
     this.input = input;
     this.controls = new Map();
@@ -19,6 +20,7 @@ export class DualSenseView {
     this.touchMarkers = [];
     this.touchpadHighlightUntil = 0;
     this.touchRaycaster = new THREE.Raycaster();
+    this.touchRaycaster.firstHitOnly = true;
     this.shellMaterials = [];
     this.buttonMaterials = [];
     this.symbolMaterials = [];
@@ -41,6 +43,7 @@ export class DualSenseView {
     this.camera = new THREE.PerspectiveCamera(32, 1, .1, 100);
     this.camera.position.set(0, 0, 9);
     this.raycaster = new THREE.Raycaster();
+    this.raycaster.firstHitOnly = true;
     this.cursor = new THREE.Vector2();
     this.model = new THREE.Group();
     this.scene.add(this.model);
@@ -63,6 +66,13 @@ export class DualSenseView {
     environment.dispose(); pmrem.dispose();
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas.parentElement);
+    if (pauseWhenOffscreen && typeof IntersectionObserver !== 'undefined') {
+      this.visibilityObserver = new IntersectionObserver(([entry]) => {
+        this.inViewport = entry.isIntersecting;
+        this.previousTime = 0;
+      });
+      this.visibilityObserver.observe(canvas);
+    }
     this.resize();
     this.previousTime = 0;
     this.frame = requestAnimationFrame(time => this.animate(time));
@@ -153,9 +163,20 @@ export class DualSenseView {
       touchpad.add(marker); this.touchMarkers.push(marker);
     }
     this.model.rotation.set(this.pose.x, this.pose.y, this.pose.z);
+    this.preparePicking();
     this.ready = true;
     this.resize();
     return this;
+  }
+
+  preparePicking() {
+    // Index the final, pivot-relative geometry. Keep exact surface hits and shell
+    // occlusion without visiting every triangle on each pointer event.
+    this.model.traverse(mesh => {
+      if (!mesh.isMesh || mesh.raycast !== THREE.Mesh.prototype.raycast) return;
+      mesh.geometry.boundsTree = new MeshBVH(mesh.geometry, { indirect: true });
+      mesh.raycast = acceleratedRaycast;
+    });
   }
 
   addSymbol(id) {
@@ -233,11 +254,19 @@ export class DualSenseView {
   resize() {
     const { width, height } = this.canvas.parentElement.getBoundingClientRect();
     if (!width || !height) return;
-    this.renderer.setSize(width, height, false);
+    const size = this.renderer.getSize(new THREE.Vector2());
+    if (size.x !== width || size.y !== height) this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
     const verticalSpace = this.gyroEnabled ? Math.max(6.3, 6.3 / this.camera.aspect) : Math.max(3.65, 5.95 / this.camera.aspect);
     this.camera.position.z = verticalSpace / (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))) + .8;
     this.camera.zoom = this.zoom;
+    this.camera.updateProjectionMatrix();
+  }
+
+  setZoom(zoom) {
+    if (this.zoom === zoom) return;
+    this.zoom = zoom;
+    this.camera.zoom = zoom;
     this.camera.updateProjectionMatrix();
   }
 
@@ -302,7 +331,7 @@ export class DualSenseView {
       triggers: { x: .75, y: Math.PI, z: 0 }, shoulders: { x: 1.05, y: 0, z: 0 },
     };
     this.pose = { ...(poses[view] || poses.front) };
-    if (resetZoom) { this.zoom = 1; this.resize(); }
+    if (resetZoom) this.setZoom(1);
   }
 
   setGyroEnabled(enabled) {
@@ -381,7 +410,7 @@ export class DualSenseView {
 
   animate(time) {
     this.frame = requestAnimationFrame(next => this.animate(next));
-    if (document.hidden || this.contextLost || this.suspended) return;
+    if (document.hidden || this.contextLost || this.suspended || this.inViewport === false) return;
     const dt = Math.min((time - (this.previousTime || time)) / 1000, .05);
     this.previousTime = time;
     const blend = this.reducedMotion.matches ? 1 : 1 - Math.exp(-18 * dt);
@@ -438,8 +467,8 @@ export class DualSenseView {
   }
 
   dispose() {
-    cancelAnimationFrame(this.frame); this.resizeObserver.disconnect();
-    this.scene.traverse(object => { if (object.isMesh) { object.geometry.dispose(); if (object.material.map?.isCanvasTexture) object.material.map.dispose(); object.material.dispose(); } });
+    cancelAnimationFrame(this.frame); this.resizeObserver.disconnect(); this.visibilityObserver?.disconnect();
+    this.scene.traverse(object => { if (object.isMesh) { object.geometry.boundsTree = null; object.geometry.dispose(); if (object.material.map?.isCanvasTexture) object.material.map.dispose(); object.material.dispose(); } });
     this.environment.dispose(); this.renderer.dispose();
   }
 }
