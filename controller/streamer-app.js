@@ -1,7 +1,7 @@
 import { StickArrowControls } from './stick-arrow-controls.js';
 import { SupportView } from './support-view.js?v=support-2';
 import { supportUrls } from './support-config.js?v=coffee-only-1';
-import { DualSenseView } from './controller-view.js?v=arrow-controls-2';
+import { DualSenseView } from './controller-view.js?v=performance-1';
 import { ControllerInput } from './input-state.js';
 import { InputCamera } from './input-camera.js';
 import { StreamerInput } from './streamer-input.js';

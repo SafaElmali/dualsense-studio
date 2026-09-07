@@ -10,7 +10,7 @@ import { BatteryInput } from './battery-input.js';
 import { BatteryView } from './battery-view.js';
 import { AppearanceView } from './appearance-view.js?v=highlights-2';
 import { TouchpadInput } from './touchpad-input.js';
-import { DualSenseView } from './controller-view.js?v=arrow-controls-2';
+import { DualSenseView } from './controller-view.js?v=performance-1';
 import { TouchDrawingView } from './touch-drawing-view.js?v=feature-events-1';
 import { DiagnosticsView } from './diagnostics-view.js';
 import { LeaderboardClient, LeaderboardView } from './leaderboard.js?v=controller-20s-v2';
@@ -31,6 +31,7 @@ const pointers = new Map();
 const accessibleButtons = new Map();
 const timers = new Set();
 let view, range, drawing, diagnostics, leaderboard, audio, sound = false, statusTimer, gamepadIndex = null, gamepadFrame = 0;
+let pendingHover;
 const inputCamera = new InputCamera(angle => {
   // Keep a dragged control under the pointer until the gesture ends.
   if (!view?.ready || pointers.size || gyro.enabled) return;
@@ -407,6 +408,7 @@ const input = new ControllerInput(event => {
 });
 
 function releaseAll() {
+  pendingHover = null;
   heldKeys.clear();
   for (const timer of timers) clearTimeout(timer); timers.clear();
   const pointerIds = [...pointers.keys()]; pointers.clear();
@@ -443,6 +445,7 @@ document.addEventListener('visibilitychange', () => {
 
 canvas.addEventListener('pointerdown', event => {
   if (!view?.ready || event.button !== 0) return;
+  pendingHover = null;
   event.preventDefault(); canvas.focus({ preventScroll: true });
   const hit = view.hit(event.clientX, event.clientY);
   const id = hit?.id;
@@ -462,10 +465,8 @@ canvas.addEventListener('pointermove', event => {
   if (!view?.ready) return;
   const pointer = pointers.get(event.pointerId);
   if (!pointer) {
-    const hit = view.hit(event.clientX,event.clientY);
-    canvas.style.cursor = hit?.id && hit.id !== 'lights' ? hit.id.endsWith('-stick') ? 'grab' : 'pointer' : 'grab';
-    const hint = hit?.id ? labels[hit.id] || hit.id.replace('-',' ') : '';
-    $('hover-label').textContent = hint; return;
+    pendingHover = { x: event.clientX, y: event.clientY };
+    return;
   }
   const dx = event.clientX - pointer.startX, dy = event.clientY - pointer.startY;
   if (Math.hypot(dx,dy) > 5) pointer.moved = true;
@@ -499,8 +500,14 @@ function releasePointer(event, cancelled = false) {
 canvas.addEventListener('pointerup', event=>releasePointer(event));
 canvas.addEventListener('pointercancel', event=>releasePointer(event,true));
 canvas.addEventListener('lostpointercapture', event=>releasePointer(event,true));
-canvas.addEventListener('pointerleave', () => { $('hover-label').textContent=''; });
-canvas.addEventListener('wheel',event=>{if(!view?.ready)return;event.preventDefault();analytics.interact('zoom');view.zoom=Math.max(.75,Math.min(1.6,view.zoom-event.deltaY*.001));view.resize();},{passive:false});
+canvas.addEventListener('pointerleave', () => { pendingHover = null; $('hover-label').textContent=''; });
+canvas.addEventListener('wheel', event => {
+  if (!view?.ready || !event.altKey) return;
+  event.preventDefault();
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? canvas.clientHeight : 1;
+  view.setZoom(Math.max(.75, Math.min(1.6, view.zoom - event.deltaY * unit * .001)));
+  analytics.interact('zoom');
+}, { passive: false });
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();releaseAll();if(view)view.contextLost=true;showError('The 3D view was interrupted. Reload it to continue.');});
 
 for (const button of document.querySelectorAll('[data-view]')) button.addEventListener('click',()=>{
@@ -592,6 +599,14 @@ function addAccessibleControls(){
     button.addEventListener('click',event=>{if(event.detail===0){input.setButton(id,'assistive',1);later(()=>input.setButton(id,'assistive',0),130);}});
   }
   view.onRender=()=>{
+    if (pendingHover) {
+      const { x, y } = pendingHover; pendingHover = null;
+      const hit = view.hit(x, y);
+      const cursor = hit?.id && hit.id !== 'lights' && !hit.id.endsWith('-stick') ? 'pointer' : 'grab';
+      if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
+      const hint = hit?.id ? labels[hit.id] || hit.id.replace('-', ' ') : '';
+      if ($('hover-label').textContent !== hint) $('hover-label').textContent = hint;
+    }
     for (const id of ['l2', 'r2']) {
       const tag = $(id + '-tag');
       const amount = input.button(id);
@@ -665,7 +680,7 @@ $('open-range').addEventListener('click', () => range.open(triggerMode.value));
 discoverPad();
 void restoreControllerConnection();
 try{
-  view=new DualSenseView(canvas,input);
+  view=new DualSenseView(canvas,input,{ pauseWhenOffscreen: true });
   await view.load(percent=>{$('load-progress').textContent=percent+'%';});
   view.setLightColor(appearance.input('light').value);
   view.setStickArrows(arrowControls.read());
