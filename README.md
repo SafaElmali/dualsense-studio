@@ -22,11 +22,13 @@ Open **[dualsense.studio](https://dualsense.studio)**, connect your controller o
 
 For battery status, gyro, touchpad finger tracking, and adaptive triggers, use desktop Chrome or Edge and allow controller access when prompted.
 
-## Support the studio
+## Support Safa’s projects
 
 Free to use. Built independently by [Safa](https://github.com/SafaElmali).
 
-[Buy me a coffee](https://buymeacoffee.com/dualsensestudio)
+Your support helps me keep building DualSense Studio, free tools, and creative experiments.
+
+[Buy me a coffee](https://buymeacoffee.com/safaelmali)
 
 ## Go deeper
 

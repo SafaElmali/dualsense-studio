@@ -106,7 +106,7 @@ test('coffee support is visible and usable before JavaScript or the 3D controlle
     const support = html.match(/<(section|aside)\b[^>]*\bdata-support(?=[\s>])[\s\S]*?<\/\1>/)?.[0];
     assert.ok(support, `${page}: support section exists in server-rendered HTML`);
     assert.doesNotMatch(support, /<[^>]*\shidden(?=[\s=>])/);
-    const link = tags(support, 'a').find(tag => tag.href === 'https://buymeacoffee.com/dualsensestudio');
+    const link = tags(support, 'a').find(tag => tag.href === 'https://buymeacoffee.com/safaelmali');
     assert.ok(link, `${page}: support link works without JavaScript`);
     assert.equal(link.target, '_blank');
     assert.match(link.rel, /noopener/);
