@@ -50,9 +50,8 @@ test('social previews use real wide PNGs with accurate dimensions and accessible
     const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
     assert.ok(width >= 1200 && height >= 600, 'Large sharing cards need sufficient image resolution');
     assert.ok(width / height >= 1.8 && width / height <= 2, 'Sharing image should have a wide card aspect ratio');
-    // The Streamer page uses the approved illustrated PNG cover; the homepage uses a simpler graphic.
-    const budget = page === 'streamer.html' ? 2_000_000 : 300_000;
-    assert.ok(png.length < budget, `${page}: social preview exceeds its image budget`);
+    // Both landing pages use the illustrated PNG cover.
+    assert.ok(png.length < 2_000_000, `${page}: social preview exceeds its image budget`);
   }
 });
 
