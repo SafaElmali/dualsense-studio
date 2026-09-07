@@ -37,6 +37,8 @@ Tests cover simultaneous input sources, trigger pressure, circular stick travel,
 - `controller/input-state.js` — shared input state service.
 - `controller/dualsense.glb` — model with separate interactive parts and embedded textures.
 - `controller/vendor/three/` — Three.js 0.180.0 and the required add-ons.
+- `maze.html` — three-course marble maze with local personal times.
+- `controller/marble-maze.js` — fixed-step physics, course geometry, and gravity-based tilt.
 - `netlify/functions/` — leaderboard API and storage logic.
 - `scripts/build.mjs` — static publish-folder generation.
 - `tests/` — input, hardware protocol, analytics, leaderboard, and page checks.

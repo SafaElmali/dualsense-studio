@@ -88,7 +88,7 @@ PostHog counts `controller_gyro_enabled`, `controller_gyro_disabled`, and `contr
 
 ## Target practice
 
-Choose **Play target practice** beneath the page title to open a 20-second arcade round. Three moving bullseyes respawn after hits. Center hits score 100, outer hits score 50, and consecutive hits add a bonus up to 50 per hit. The HUD shows score, time, accuracy, streak, and a personal best stored only in your browser.
+Choose **Play → Target practice** in the navigation to open a 20-second arcade round. Three moving bullseyes respawn after hits. Center hits score 100, outer hits score 50, and consecutive hits add a bonus up to 50 per hit. The HUD shows score, time, accuracy, streak, and a personal best stored only in your browser.
 
 - **Controller:** right stick aims, R2 fires, Triangle cycles weapons, and Cross starts/replays/resumes a round.
 - A connected, standard-mapped controller is required. Connect via USB or Bluetooth and press a button so the browser detects it. Mouse, trackpad, touchscreen, and keyboard cannot aim or fire; menus and name entry remain accessible.
@@ -117,3 +117,15 @@ For a standard-mapped controller, L2 and R2 show current travel and observed min
 ## Shareable scorecards
 
 Finish a target-practice round, then choose **Download scorecard**. The 1200 × 675 PNG includes the score, accuracy, hits/shots, and every weapon actually fired during that round. Switching weapons after completion cannot change the card, and replay cannot change a download already started. Empty rounds explicitly say no shots were fired. Cards are generated locally. Players can separately choose to submit their round to the public leaderboard.
+
+## Marble maze
+
+Open **Play → Marble maze** from the navigation, or visit `maze.html`. Three 3D courses progress from a simple switchback to narrow passages with pockets. Reach the gold ring to finish. Falling into a pocket returns the marble to the start; the timer and fall count continue.
+
+Choose **Arrow keys / touch**, **Controller left stick**, or **Controller tilt (gyro)**. Touch direction buttons support simultaneous presses. With controller input selected, Cross starts or resumes a course; a button held during connection does not start a run. Switching input mode starts a new attempt. Personal bests are saved locally per course and input mode; unavailable browser storage never blocks play.
+
+Gyro uses the existing read-only DualSense connection in desktop Chrome or Edge. Choose **Connect gyro**, hold the controller face up with the USB port toward the screen, then choose **Set level position** for a comfortable neutral pose. Motion uses smoothed accelerometer gravity, so holding a tilt keeps the marble moving downhill. Strong acceleration is ignored. Recenter pauses the course. This reads controller reports and never sends resistance, rumble, LED, or calibration output.
+
+Focus loss, hidden tabs, stale motion, disconnected controllers, and long stalled frames pause play. Reconnect and explicitly resume. All courses are available immediately, and the chosen course can be restarted at any time. Reduced-motion settings remove decorative board tilt while preserving the marble's movement. A WebGL failure explains how to recover.
+
+Tests exercise continuous routes through every actual course, wall and edge collisions, pockets, timing, pause/resume, best-time storage, tilt direction, neutral poses, and USB/Bluetooth report decoding. Physical controller feel still needs a hands-on check.

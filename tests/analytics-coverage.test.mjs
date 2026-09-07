@@ -7,7 +7,27 @@ import { ControllerInput } from '../controller/input-state.js';
 
 import { PageAnalytics } from '../controller/page-analytics.js';
 
-
+test('every named feature event in the app is accepted by the analytics filter', async () => {
+  const directory = new URL('../controller/', import.meta.url);
+  let checked = 0;
+  for (const file of await readdir(directory)) {
+    if (!file.endsWith('.js')) continue;
+    const source = await readFile(new URL(file, directory), 'utf8');
+    for (const [, sourceFeature, action] of source.matchAll(/(?:featureAction|onAction)\('([a-z_]+)',\s*'([a-z_]+)'/g)) {
+      const feature = file === 'appearance-view.js' ? 'appearance' : sourceFeature;
+      assert.ok(Object.hasOwn(ControllerAnalytics.featureActions[feature] || {}, action), `${file}: ${feature}.${action} is silently dropped`);
+      checked++;
+    }
+    const trackedFeature = {
+'marble-maze-app.js': 'marble_maze'
+}[file];
+    if (trackedFeature) for (const [, action] of source.matchAll(/\btrack\('([a-z_]+)'/g)) {
+      assert.ok(Object.hasOwn(ControllerAnalytics.featureActions[trackedFeature], action), `${trackedFeature}.${action} is silently dropped`);
+      checked++;
+    }
+  }
+  assert.ok(checked > 70);
+});
 
 
 

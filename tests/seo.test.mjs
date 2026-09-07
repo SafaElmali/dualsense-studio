@@ -6,6 +6,7 @@ import { readFile, stat } from 'node:fs/promises';
 const root = new URL('../dist/', import.meta.url);
 const origin = 'https://dualsense.studio';
 const pages = ['index.html'];
+const publicPages = [...pages, 'maze.html'];
 const read = path => readFile(new URL(path, root), 'utf8');
 const attributes = tag => Object.fromEntries([...tag.matchAll(/([\w:-]+)="([^"]*)"/g)].map(([, k, v]) => [k, v]));
 const tags = (html, name) => [...html.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'g'))].map(([tag]) => attributes(tag));
@@ -15,7 +16,7 @@ const sitemapUrls = async () => [...(await read('sitemap.xml')).matchAll(/<loc>(
 
 test('each public landing page has one clean canonical, unique metadata and a crawlable heading', async () => {
   const titles = new Set(), descriptions = new Set();
-  for (const page of pages) {
+  for (const page of publicPages) {
     const html = await read(page), expected = origin + (page === 'index.html' ? '/' : '/' + page);
     const title = html.match(/<title>([^<]+)<\/title>/)?.[1];
     assert.ok(title?.includes('DualSense Studio'), page);
@@ -31,15 +32,15 @@ test('each public landing page has one clean canonical, unique metadata and a cr
     // Metadata stays stable for all appearance/preset query combinations.
     assert.equal(new URL(expected).search, '');
   }
-  assert.equal(titles.size, pages.length);
-  assert.equal(descriptions.size, pages.length);
+  assert.equal(titles.size, publicPages.length);
+  assert.equal(descriptions.size, publicPages.length);
 });
 
 
 
 test('sitemap includes exactly indexable destinations; capture stays crawlable but noindex', async () => {
   const urls = await sitemapUrls();
-  
+  assert.deepEqual(urls, publicPages.map(page => origin + (page === 'index.html' ? '/' : '/' + page)));
   const robots = await read('robots.txt');
   assert.match(robots, /User-agent: \*/);
   assert.match(robots, /Sitemap: https:\/\/dualsense\.studio\/sitemap\.xml/);
@@ -58,7 +59,7 @@ test('sitemap includes exactly indexable destinations; capture stays crawlable b
 });
 
 test('structured data describes the actual app and agrees with canonical page identity', async () => {
-  for (const page of pages) {
+  for (const page of publicPages) {
     const html = await read(page);
     const scripts = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
     assert.equal(scripts.length, 1);
@@ -75,7 +76,7 @@ test('structured data describes the actual app and agrees with canonical page id
 });
 
 test('all static local links, assets and fragment targets survive the build', async () => {
-  for (const page of [...pages, '404.html']) {
+  for (const page of [...publicPages, '404.html']) {
     const html = await read(page), base = new URL(page, origin + '/');
     const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id);
     assert.equal(new Set(ids).size, ids.length, `${page}: duplicate element ID`);

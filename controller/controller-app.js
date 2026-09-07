@@ -425,7 +425,7 @@ function keyAxes() {
   }
 }
 window.addEventListener('keydown', event => {
-  if (range?.isOpen || drawing?.isOpen || diagnostics?.isOpen || leaderboard?.isOpen || event.ctrlKey || event.metaKey || event.altKey || help.open || event.target.closest?.('button,input,select,textarea,a')) return;
+  if (range?.isOpen || drawing?.isOpen || diagnostics?.isOpen || leaderboard?.isOpen || event.ctrlKey || event.metaKey || event.altKey || help.open || event.target.closest?.('button,input,select,textarea,a,summary,nav')) return;
   if (!keyMap[event.code] && !analogCodes.has(event.code)) return;
   event.preventDefault(); if (event.repeat) return; heldKeys.add(event.code);
   if (keyMap[event.code]) input.setButton(keyMap[event.code], 'key:' + event.code, 1);
@@ -675,7 +675,20 @@ leaderboard = new LeaderboardView({
 $('range-leaderboard').addEventListener('click', () => leaderboard.open());
 $('open-drawing').addEventListener('click', () => drawing.open());
 $('open-diagnostics').addEventListener('click', () => diagnostics.open());
-$('open-range').addEventListener('click', () => range.open(triggerMode.value));
+function openRange() {
+  const menu = $('open-range').closest('details');
+  if (menu) { menu.open = false; menu.querySelector('summary').focus(); }
+  range.open(triggerMode.value);
+}
+$('open-range').addEventListener('click', openRange);
+// Other studio pages can link straight into target practice through Play.
+function openLinkedRange() {
+  if (location.hash !== '#range') return;
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!range.isOpen) openRange();
+}
+window.addEventListener('hashchange', openLinkedRange);
+openLinkedRange();
 // Battery access must not wait for the 3D model, or depend on touchpad tracking.
 discoverPad();
 void restoreControllerConnection();
