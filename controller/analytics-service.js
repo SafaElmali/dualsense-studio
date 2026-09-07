@@ -10,6 +10,10 @@ export class ControllerAnalytics {
     navigation: { clicked: ['surface', 'destination', 'placement'] },
     support: { clicked: ['surface', 'provider'] },
     streamer: {
+      guide_opened: ['surface'], guide_method_selected: ['surface', 'capture_method'],
+      look_selected: ['surface', 'look'], saved_looks_opened: ['surface'], look_saved: ['surface'],
+      saved_look_applied: ['surface'], saved_look_removed: ['surface'], settings_restored: ['surface'],
+      scene_preview_changed: ['surface', 'preview_mode'],
       camera_help_viewed: ['surface'],
       tab_selected: ['surface', 'tab'],
       opened: ['surface'], settings_changed: ['surface', 'setting', 'camera', 'background', 'enabled', 'opacity', 'scale', 'selection', 'size', 'color_mode'], settings_reset: ['surface'],
@@ -60,6 +64,7 @@ export class ControllerAnalytics {
   ]);
 
   static propertyValues = {
+    look: ['clean', 'neon', 'dark', 'minimal'], capture_method: ['browser', 'window'], preview_mode: ['overlay', 'scene'],
     board: ['current', 'previous', 'original'],
     platform: ['Twitch', 'YouTube', 'Kick'],
     topic: ['connection', 'stick_drift', 'device_access', 'virtual_controller', 'compatibility', 'independence', 'pricing', 'obs_setup', 'transparent_background', 'customization', 'demo', 'stick_arrows'],

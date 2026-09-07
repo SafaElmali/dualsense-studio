@@ -41,13 +41,16 @@ export class StreamerShowcaseView {
     this.root = root; this.client = client; this.onAction = onAction; this.trackLink = trackLink;
     this.form = root.querySelector('form');
     this.toggle = root.querySelector('[data-showcase-toggle]');
-    this.panel = root.querySelector('[data-showcase-panel]');
+    this.dialog = root.querySelector('[data-showcase-dialog]');
     this.toggle.addEventListener('click', () => {
-      const opening = this.panel.hidden;
-      this.panel.hidden = !opening;
-      this.toggle.setAttribute('aria-expanded', String(opening));
-      this.toggle.textContent = opening ? 'Close form' : 'Add your channel';
-      if (opening) { this.onAction('form_opened'); this.form.elements.name.focus({ preventScroll: true }); }
+      this.dialog.showModal();
+      this.onAction('form_opened');
+    });
+    root.querySelector('[data-showcase-close]').addEventListener('click', () => this.dialog.close());
+    this.dialog.addEventListener('click', event => {
+      if (event.target !== this.dialog) return;
+      const bounds = this.dialog.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) this.dialog.close();
     });
     this.form.addEventListener('submit', event => { event.preventDefault(); void this.submit(); });
     this.form.addEventListener('input', event => event.target.removeAttribute('aria-invalid'));
@@ -109,6 +112,7 @@ export class StreamerShowcaseView {
       await this.client.submit({ ...channel, consent: true, website: this.form.elements.website.value });
       this.form.reset();
       status.textContent = 'Thanks! Your channel is with us. Approved channels will appear here. For updates, reach out to @SafaElmali on X.';
+      if (this.dialog.open) status.focus();
       this.onAction('submitted', properties);
     } catch (error) {
       status.textContent = error.message;

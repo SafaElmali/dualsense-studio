@@ -9,7 +9,8 @@ import { StreamerDemo } from './streamer-demo.js?v=feature-events-1';
 import { StreamerSettings } from './streamer-settings.js?v=arrow-controls-2';
 import { StreamerRotation } from './streamer-rotation.js';
 import { AppEvents } from './app-events.js';
-import { StreamerShowcaseView } from './streamer-showcase.js?v=optional-events-1';
+import { StreamerShowcaseView } from './streamer-showcase.js?v=channel-dialog-1';
+import { StreamerBuilderView } from './streamer-builder-view.js?v=builder-2';
 
 const $ = id => document.getElementById(id);
 const capture = document.body.classList.contains('streamer-overlay');
@@ -25,7 +26,7 @@ document.querySelectorAll('[data-support]').forEach(root => {
 });
 const track = (action, properties = {}) => analytics.featureAction('streamer', action, { ...properties, surface });
 const form = $('streamer-settings');
-let arrowControls;
+let arrowControls, builder;
 let settings = StreamerSettings.read(location.search);
 let view, frame, disposed = false;
 const inputCamera = new InputCamera(angle => {
@@ -43,6 +44,7 @@ const rotation = new StreamerRotation({
   },
   onCommit: () => {
     saveSettings();
+    builder?.render(settings);
     track('camera_rotated');
   },
 });
@@ -69,7 +71,7 @@ const triggerDisplay = document.createElement('div');
 triggerDisplay.className = 'overlay-triggers';
 triggerDisplay.setAttribute('aria-label', 'Live trigger pressure');
 triggerDisplay.innerHTML = ['l2', 'r2'].map(id => `<div class="overlay-trigger" data-trigger="${id}"><span>${id.toUpperCase()}</span><meter min="0" max="1" value="0" aria-label="${id === 'l2' ? 'Left' : 'Right'} trigger pressure"></meter><output aria-live="off">0%</output></div>`).join('');
-stage.append(triggerDisplay);
+$(capture ? 'capture-stage' : 'preview-controller').append(triggerDisplay);
 const triggerDisplays = new Map([...triggerDisplay.children].map(element => [element.dataset.trigger, element]));
 const input = new ControllerInput(event => {
   inputCamera.observe(event);
@@ -119,6 +121,7 @@ const source = new StreamerInput(input, {
     $('demo').disabled = connected || state === 'waiting-direct';
     if ($('demo').disabled) demo.stop('live_input');
     if (!capture) $('demo-note').textContent = $('demo').disabled ? 'Controller connected' : 'No controller needed';
+    builder?.setInputState(state);
     if (capture) {
       $('connect-direct').textContent = source.device ? 'Disconnect direct input' : 'Connect DualSense';
       $('touch-capability').textContent = state === 'direct' ? 'Touchpad finger tracking is connected. Slide a finger without pressing down.' : 'Normal controller input includes the touchpad click. For finger tracking, use Connect DualSense in a Chrome or Edge capture window.';
@@ -157,13 +160,15 @@ function applySettings() {
   $('background-label').textContent = { transparent: 'TRANSPARENT BACKGROUND', green: 'GREEN CHROMA KEY', blue: 'BLUE CHROMA KEY', solid: 'CUSTOM BACKGROUND' }[settings.background];
   $('custom-background').hidden = settings.background !== 'solid';
   $('custom-background-swatch').style.background = settings.color;
+  builder?.render(settings);
 }
 
 function updateLinks() {
   if (capture) $('edit-overlay').href = new URL(`streamer.html?${StreamerSettings.query(settings)}`, location.href).href;
   else {
-    $('overlay-url').value = StreamerSettings.url(location.href, settings);
-    $('open-capture').href = StreamerSettings.url(location.href, settings, { setup: true });
+    const exported = builder?.exportSettings() ?? settings;
+    $('overlay-url').value = builder?.exportURL(location.href) ?? StreamerSettings.url(location.href, exported);
+    $('open-capture').href = StreamerSettings.url(location.href, exported, { setup: true });
   }
 }
 
@@ -268,6 +273,14 @@ if (capture) {
     onPreview: () => { stage.scrollIntoView({ block: 'center', behavior: 'instant' }); view?.previewStickArrows(); track('arrows_previewed'); },
   });
   fillSettings();
+  builder = new StreamerBuilderView(document, {
+    getSettings: () => settings,
+    onApply: next => { settings = StreamerSettings.normalize(next); fillSettings(); applySettings(); saveSettings(); },
+    onExportChange: updateLinks,
+    onAction: track,
+  });
+  builder.setInputState(source.state);
+  updateLinks();
   const autoCamera = form.querySelector('.camera-auto');
   for (const event of ['pointerenter', 'focusin']) autoCamera.addEventListener(event, () => {
     autoCamera.removeAttribute('data-tooltip-dismissed');
@@ -297,20 +310,29 @@ if (capture) {
     saveSettings();
     analytics.streamerSettingChanged(event.target.name, settings[event.target.name], surface);
   });
-  $('reset-settings').addEventListener('click', () => {
-    settings = { ...StreamerSettings.defaults }; fillSettings(); applySettings();
-    history.replaceState(null, '', location.pathname); track('settings_reset');
-  });
+  $('reset-settings').addEventListener('click', () => builder.reset());
   $('overlay-url').addEventListener('copy', () => track('link_copied', { method: 'manual' }));
   // Use normal page navigation: embedded popup windows can suppress the HID picker.
   analytics.trackLink($('open-capture'), () => track('capture_opened'));
 }
 
+const copyToast = $('copy-toast');
+let copyToastTimeout;
+function clearCopyToast() {
+  clearTimeout(copyToastTimeout);
+  copyToast.textContent = '';
+}
+window.addEventListener('pagehide', clearCopyToast);
+$('obs-dialog')?.addEventListener('close', clearCopyToast);
+
 $('copy-overlay').addEventListener('click', async () => {
-  const link = StreamerSettings.url(location.href, settings);
+  clearCopyToast();
+  $('export-status').textContent = '';
+  const link = builder?.exportURL(location.href) ?? StreamerSettings.url(location.href, settings);
   try {
     await navigator.clipboard.writeText(link);
-    $('export-status').textContent = 'Link copied with your camera angle. Paste it into the OBS source URL to keep this view after refresh.';
+    copyToast.textContent = builder?.obsMethod === 'window' ? 'Capture link copied' : 'OBS link copied';
+    copyToastTimeout = setTimeout(clearCopyToast, 4000);
     track('link_copied', { method: 'clipboard' });
   } catch {
     if (capture) $('export-status').textContent = `Copy this OBS link: ${link}`;

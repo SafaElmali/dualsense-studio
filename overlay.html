@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png?v=ds-logo-1">
   <link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon-48.png?v=ds-logo-1">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png?v=ds-logo-1">
-  <link rel="stylesheet" href="./controller/streamer.css?v=contact-1">
+  <link rel="stylesheet" href="./controller/streamer.css?v=builder-2">
   <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
 </head>
 <body class="streamer-overlay">
@@ -24,6 +24,7 @@
     <p>Drag the controller to set your angle; Shift-drag to roll. To keep it after OBS refresh, copy the updated link and paste it into your source URL.</p><label class="meter-toggle"><span>Show L2/R2 meters</span><input type="checkbox" role="switch" id="trigger-meters" name="triggerMeters" value="show" checked></label><button type="button" class="secondary-button capture-demo" id="copy-overlay">Copy OBS link</button><p id="export-status" class="export-status" role="status"></p><p>Press <kbd>Esc</kbd> or double-click to bring this panel back.</p><a id="edit-overlay" href="./streamer.html">Edit your overlay ↗</a>
     <p class="contact-note">Questions or feedback?<br><a href="https://x.com/SafaElmali" target="_blank" rel="noopener noreferrer" data-analytics-destination="x" data-analytics-placement="help">Reach out to @SafaElmali on X <span aria-hidden="true">↗</span></a></p>
   </section>
-  <script type="module" src="./controller/streamer-app.js?v=optional-events-1"></script>
+  <div class="copy-toast" id="copy-toast" role="status" aria-atomic="true"></div>
+  <script type="module" src="./controller/streamer-app.js?v=builder-2"></script>
 </body>
 </html>

@@ -26,6 +26,10 @@ export class StreamerSettings {
 
   static read(search) { return this.normalize(Object.fromEntries(new URLSearchParams(search))); }
 
+  static forOBS(values, method, chroma = 'green') {
+    return this.normalize({ ...values, background: method === 'window' ? (chroma === 'blue' ? 'blue' : 'green') : 'transparent' });
+  }
+
   static query(values) {
     const settings = this.normalize(values);
     if (settings.camera !== 'custom') for (const axis of ['pitch', 'yaw', 'roll']) delete settings[axis];

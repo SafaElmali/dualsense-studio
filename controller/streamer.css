@@ -99,3 +99,10 @@
 #streamer-arrows .arrow-preview{font-size:13px}
 @media(max-width:1000px){.preview-footer .input-strip{flex-basis:100%}}
 @media(max-width:480px){.preview-demo{align-items:flex-start;margin-left:0}.preview-demo button{min-width:128px}}
+
+.copy-toast{position:fixed;z-index:20;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);color:var(--mint);font-size:14px;font-weight:500;line-height:1.5;pointer-events:none}
+.copy-toast:not(:empty){display:flex;align-items:center;gap:12px;padding:14px 20px;border:1px solid #a8c5b25c;border-radius:12px;background:#1a2c24;box-shadow:0 8px 32px #0005;animation:copy-toast-in .18s ease-out}
+.copy-toast:not(:empty)::before{content:'';flex-shrink:0;width:11px;height:6px;margin-top:-3px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg)}
+.streamer-overlay:has(.capture-setup[hidden]) .copy-toast{display:none}
+@keyframes copy-toast-in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(prefers-reduced-motion:reduce){.copy-toast:not(:empty){animation:none}}
