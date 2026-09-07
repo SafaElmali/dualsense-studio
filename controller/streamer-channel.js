@@ -37,4 +37,19 @@ export class StreamerChannel {
   }
 
   static platform(channelUrl) { return this.platforms[new URL(channelUrl).hostname]; }
+
+  static profile(value) {
+    const profile = {};
+    for (const [key, max] of [['displayName', 100], ['description', 300]]) {
+      if (typeof value?.[key] === 'string') profile[key] = Array.from(value[key].replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim()).slice(0, max).join('');
+    }
+    if (typeof value?.avatarUrl === 'string' && value.avatarUrl.length <= 2048) {
+      try {
+        const url = new URL(value.avatarUrl);
+        const hosts = ['jtvnw.net', 'googleusercontent.com', 'ggpht.com', 'kick.com'];
+        if (url.protocol === 'https:' && !url.username && !url.password && !url.port && hosts.some(host => url.hostname === host || url.hostname.endsWith('.' + host))) profile.avatarUrl = value.avatarUrl;
+      } catch { /* Missing or invalid images use the name initial. */ }
+    }
+    return profile;
+  }
 }

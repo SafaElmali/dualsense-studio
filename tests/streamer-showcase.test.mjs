@@ -5,6 +5,7 @@ import { StreamerShowcaseClient } from '../controller/streamer-showcase.js';
 import { StreamerShowcaseService } from '../server/streamer-showcase-service.mjs';
 import { StreamerShowcaseHandler } from '../server/streamer-showcase-handler.mjs';
 import { ControllerAnalytics } from '../controller/analytics-service.js';
+import { StreamerProfileService } from '../server/streamer-profile-service.mjs';
 
 class Store {
   constructor() { this.records = new Map(); this.version = 0; }
@@ -17,9 +18,9 @@ class Store {
     this.records.set(key, { data: structuredClone(data), etag }); return { modified: true, etag };
   }
 }
-function fixture() {
+function fixture(profiles = new StreamerProfileService({ env: {} })) {
   const store = new Store(); let now = 0;
-  return { store, service: new StreamerShowcaseService(store, { now: () => now }), advance: ms => { now += ms; } };
+  return { store, service: new StreamerShowcaseService(store, { now: () => now, profiles }), advance: ms => { now += ms; } };
 }
 const submission = (name = 'Test Channel', channelUrl = 'https://twitch.tv/testchannel') => ({ name, channelUrl, consent: true });
 const trustedContext = { ip: '192.0.2.23' };
@@ -203,4 +204,74 @@ test('showcase analytics exclude submitted details and asynchronous outcomes do 
   }
   analytics.featureAction('streamer_showcase', 'channel_opened', { platform: 'private' });
   assert.deepEqual(events.at(-1), { name: 'controller_streamer_showcase_channel_opened' });
+});
+
+test('approval fetches public profile fields; page loads use the saved profile and never call a platform', async () => {
+  let calls = 0;
+  const profile = { displayName: 'Channel 🎮', description: 'Games and good company.', avatarUrl: 'https://static-cdn.jtvnw.net/avatar.png' };
+  const { service, store } = fixture({ available: () => true, fetch: async () => { calls++; return { ...profile, email: 'private@example.test' }; } });
+  await service.submit({ ...submission(), profile: { description: 'Injected content' } });
+  assert.equal(calls, 0);
+  const [{ id }] = await service.reviewList(); await service.review(id, 'approved');
+  const handler = new StreamerShowcaseHandler(() => new StreamerShowcaseService(store, { now: () => 0 }));
+  const client = new StreamerShowcaseClient(path => handler.handle(new Request('https://studio.example' + path)));
+  assert.deepEqual(await client.list(), [{ name: 'Test Channel', channelUrl: submission().channelUrl, profile }]);
+  assert.deepEqual(await client.list(), await client.list()); assert.equal(calls, 1);
+  assert.equal(JSON.stringify(await service.reviewList()).includes('private@example'), false);
+  await service.submit({ ...submission(), profile: { description: 'Injected again' } });
+  assert.deepEqual((await service.list()).channels[0].profile, profile);
+});
+
+test('scheduled refresh backfills existing approvals, respects daily caching and retains profiles on failure', async () => {
+  const { service, advance } = fixture();
+  await service.submit(submission());
+  const [{ id }] = await service.reviewList(); await service.review(id, 'approved');
+  let calls = 0, fail = false;
+  service.profiles = { available: () => true, fetch: async () => { calls++; if (fail) throw new Error('secret'); return { displayName: 'Platform Name', description: '' }; } };
+  assert.deepEqual(await service.refreshProfiles(), { updated: 1, failed: 0 });
+  assert.deepEqual(await service.refreshProfiles(), { updated: 0, failed: 0 }); assert.equal(calls, 1);
+  advance(StreamerShowcaseService.profileRefreshMs); fail = true;
+  assert.deepEqual(await service.refreshProfiles(), { updated: 0, failed: 1 });
+  assert.equal((await service.list()).channels[0].profile.displayName, 'Platform Name');
+  await service.refreshProfiles(); assert.equal(calls, 2);
+  advance(StreamerShowcaseService.profileMaxAgeMs);
+  assert.equal((await service.list()).channels[0].profile, undefined);
+  fail = false; await service.refreshProfiles();
+  assert.equal((await service.list()).channels[0].profile.displayName, 'Platform Name');
+});
+
+test('unavailable profiles never prevent approval and rejection during a refresh stays rejected', async () => {
+  const { service, advance } = fixture({ available: () => true, fetch: async () => { throw new Error('upstream unavailable'); } });
+  await service.submit(submission()); const [{ id }] = await service.reviewList();
+  await service.review(id, 'approved'); assert.equal((await service.list()).channels.length, 1);
+  let finish, started;
+  const ready = new Promise(resolve => { started = resolve; });
+  service.profiles.fetch = () => new Promise(resolve => { finish = resolve; started(); });
+  advance(StreamerShowcaseService.profileRefreshMs);
+  const refreshing = service.refreshProfiles(); await ready;
+  await service.review(id, 'rejected'); finish({ displayName: 'Late Profile' }); await refreshing;
+  assert.deepEqual(await service.list(), { channels: [] });
+  const [record] = await service.reviewList(); assert.equal(record.state, 'rejected'); assert.equal(record.profile, undefined);
+});
+
+test('refresh batches rotate past failed lookups and never fetch pending or rejected channels', async () => {
+  const { service } = fixture();
+  for (const name of ['First', 'Second', 'Third', 'Pending', 'Rejected']) await service.submit(submission(name, 'https://twitch.tv/' + name.toLowerCase()));
+  for (const { id, name } of await service.reviewList()) {
+    if (name !== 'Pending') await service.review(id, name === 'Rejected' ? 'rejected' : 'approved');
+  }
+  const fetched = [];
+  service.profiles = { available: () => true, fetch: async url => { fetched.push(url); throw new Error('unavailable'); } };
+  await service.refreshProfiles({ limit: 2 }); await service.refreshProfiles({ limit: 2 });
+  assert.deepEqual(fetched, ['https://twitch.tv/first', 'https://twitch.tv/second', 'https://twitch.tv/third']);
+});
+
+test('profile normalization bounds text and rejects non-platform images without hiding the card', async () => {
+  for (const avatarUrl of ['javascript:alert(1)', 'http://static-cdn.jtvnw.net/avatar.png', 'https://jtvnw.net.evil.test/a', 'https://user:password@files.kick.com/a', 'https://files.kick.com:444/a', 'https://example.com/a', 'data:image/png;base64,abc']) {
+    const profile = StreamerChannel.profile({ displayName: '  Name\nHere ', description: '🎮'.repeat(350), avatarUrl, email: 'private' });
+    assert.deepEqual(profile, { displayName: 'Name Here', description: '🎮'.repeat(300) });
+  }
+  const client = new StreamerShowcaseClient(async () => Response.json({ channels: [{ ...submission(), profile: { avatarUrl: 'javascript:bad', displayName: '<b>Name</b>', description: '<img src=x>' } }] }));
+  const [channel] = await client.list();
+  assert.equal(channel.profile.avatarUrl, undefined); assert.equal(channel.profile.description, '<img src=x>');
 });

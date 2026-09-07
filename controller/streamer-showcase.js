@@ -27,7 +27,7 @@ export class StreamerShowcaseClient {
   async list() {
     const data = await this.request();
     if (!Array.isArray(data?.channels)) throw new Error('Could not load the showcase. Please try again.');
-    return data.channels.map(channel => StreamerChannel.normalize(channel));
+    return data.channels.map(channel => ({ ...StreamerChannel.normalize(channel), ...(channel.profile ? { profile: StreamerChannel.profile(channel.profile) } : {}) }));
   }
 
   async submit(body) {
@@ -75,9 +75,26 @@ export class StreamerShowcaseView {
         link.href = channel.channelUrl; link.target = '_blank'; link.rel = 'noopener noreferrer';
         const badge = document.createElement('span');
         badge.className = 'showcase-platform'; badge.textContent = platform;
-        const name = document.createElement('strong'); name.textContent = channel.name;
+        const displayName = channel.profile?.displayName || channel.name;
+        const identity = document.createElement('span'); identity.className = 'showcase-identity';
+        const avatar = document.createElement('span'); avatar.className = 'showcase-avatar'; avatar.setAttribute('aria-hidden', 'true');
+        avatar.textContent = Array.from(displayName)[0].toLocaleUpperCase();
+        if (channel.profile?.avatarUrl) {
+          const image = document.createElement('img'); image.alt = ''; image.width = 56; image.height = 56;
+          image.loading = 'lazy'; image.decoding = 'async'; image.referrerPolicy = 'no-referrer';
+          image.addEventListener('error', () => image.remove(), { once: true });
+          image.src = channel.profile.avatarUrl; avatar.append(image);
+        }
+        const details = document.createElement('span'); details.className = 'showcase-details';
+        const name = document.createElement('strong'); name.textContent = displayName;
+        details.append(name, badge); identity.append(avatar, details);
         const action = document.createElement('span'); action.className = 'showcase-visit'; action.textContent = 'Visit channel ↗';
-        link.append(badge, name, action); card.append(link); list.append(card);
+        link.append(identity);
+        if (channel.profile?.description) {
+          const bio = document.createElement('p'); bio.className = 'showcase-bio'; bio.textContent = channel.profile.description;
+          link.append(bio);
+        }
+        link.append(action); card.append(link); list.append(card);
         this.trackLink(link, () => this.onAction('channel_opened', { platform }));
       }
       list.hidden = !channels.length;

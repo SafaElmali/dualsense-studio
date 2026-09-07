@@ -48,3 +48,34 @@ Analytics regression checks cover every literal event call against the allowlist
 ## Streamer showcase
 
 Streamers can submit their Twitch, YouTube, or Kick channel for review. Only approved channels appear publicly.
+
+Approved cards show the platform's display name, profile image and a short bio when available. Missing or broken images fall back to a name initial. The submitted name and link still work when a platform is unavailable. Profile lookups use official APIs on the server; visitors and streamers do not need to sign in.
+
+### Platform credentials
+
+Add these environment variables to the Netlify project, with **Functions** scope and the **Production** context, then deploy the updated functions:
+
+| Platform | Variables | Setup |
+| --- | --- | --- |
+| Twitch | `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` | Register an application in the [Twitch developer console](https://dev.twitch.tv/console/apps). Use a confidential client; public profile lookup uses an app token. |
+| YouTube | `YOUTUBE_API_KEY` | Enable YouTube Data API v3 in a Google Cloud project and create an API key restricted to that API. |
+| Kick | `KICK_CLIENT_ID`, `KICK_CLIENT_SECRET` | Create an app in Kick's developer settings. Public channel/user lookup uses an app token. |
+
+Configure only the platforms you need. Secrets must stay in Netlify or your local environment, never in browser files or git. The integration requests no streamer permissions and stores no email addresses or access tokens in the showcase.
+
+### Moderation and refresh
+
+With `NETLIFY_SITE_ID` and `NETLIFY_AUTH_TOKEN` available locally:
+
+```sh
+npm run streamers:review -- list
+npm run streamers:review -- approve <id>
+npm run streamers:review -- reject <id>
+npm run streamers:review -- refresh <id>
+```
+
+Approval attempts a profile fetch when the matching platform credentials are in the command's environment; approval still succeeds if the lookup fails. `refresh` without an ID refreshes a batch of up to 20 approved channels. The command displays the last successful profile fetch time.
+
+The `refresh-streamer-profiles` scheduled Netlify Function checks up to 20 due profiles every 15 minutes, oldest attempts first, with a day between attempts per channel. This also fills in profiles for previously approved channels after credentials are configured. It runs automatically only on published production deployments; use **Run now** in Netlify's function page to backfill immediately. Page loads only read cached data and never call a platform API. Failed lookups preserve the last successful profile, but profiles older than 30 days are no longer shown.
+
+See the official [Twitch users API](https://dev.twitch.tv/docs/api/reference/#get-users), [YouTube channels API](https://developers.google.com/youtube/v3/docs/channels/list), and [Kick API](https://docs.kick.com/apis/channels).

@@ -11,6 +11,12 @@
 .showcase-list li{min-width:0}
 .showcase-list a{display:flex;flex-direction:column;align-items:flex-start;gap:10px;height:100%;padding:22px;border:1px solid #a8c5b233;border-radius:12px;background:#101916;transition:background .15s,border-color .15s}
 .showcase-list a:hover{background:#21352a;border-color:#a8c5b27a}
+.showcase-list a:focus-visible{outline:2px solid var(--mint);outline-offset:4px}
+.showcase-identity{display:flex;align-items:center;gap:14px;width:100%;min-width:0}
+.showcase-avatar{position:relative;display:grid;place-items:center;flex-shrink:0;width:56px;height:56px;overflow:hidden;border:1px solid #b8e8ca40;border-radius:50%;background:#284333;color:#d0eedb;font-size:24px;font-weight:500}
+.showcase-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#284333}
+.showcase-details{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+.showcase-bio{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;margin:6px 0 0;color:#a2b6a9;font-size:13px;line-height:1.7}
 .showcase-platform{font:12px ui-monospace,monospace;letter-spacing:.05em;color:#a3bfae;border:1px solid #a8c5b233;border-radius:5px;padding:4px 8px}
 .showcase-list strong{font-size:20px;font-weight:500;overflow-wrap:anywhere;line-height:1.4}
 .showcase-visit{margin-top:auto;padding-top:12px;color:var(--mint);font-size:13px}

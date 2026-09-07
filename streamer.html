@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="./controller/streamer.css?v=builder-2">
   <link rel="stylesheet" href="./controller/streamer-builder.css?v=builder-2">
   <link rel="stylesheet" href="./controller/stick-arrows.css?v=arrow-controls-2">
-  <link rel="stylesheet" href="./controller/streamer-showcase.css?v=channel-dialog-1">
+  <link rel="stylesheet" href="./controller/streamer-showcase.css?v=channel-profiles-1">
   <link rel="stylesheet" href="./controller/site-header.css?v=github-compact-2">
   <script type="importmap">{"imports":{"three":"./controller/vendor/three/three.module.min.js","three/addons/":"./controller/vendor/three/addons/"}}</script>
 </head>
@@ -129,8 +129,8 @@
           <label for="showcase-name">Streamer name<input id="showcase-name" name="name" type="text" autocomplete="nickname" required minlength="2" maxlength="40" placeholder="Your channel name"></label>
           <label for="showcase-url">Channel URL<input id="showcase-url" name="channelUrl" type="text" inputmode="url" autocapitalize="off" spellcheck="false" required maxlength="300" placeholder="https://twitch.tv/yourchannel" aria-describedby="showcase-platforms"><small id="showcase-platforms">Twitch, YouTube (@handle or /channel/), or Kick.</small></label>
           <label hidden aria-hidden="true">Leave this empty<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
-          <label class="showcase-consent"><input name="consent" type="checkbox" required><span>I use DualSense Studio on my stream and agree to have my streamer name and channel link shown here.</span></label>
-          <div class="showcase-submit"><button type="submit" class="primary-button">Submit for review</button><p>Every submission is reviewed before appearing. Only your streamer name and channel link will be public.</p></div>
+          <label class="showcase-consent"><input name="consent" type="checkbox" required><span>I use DualSense Studio on my stream and agree to have my public channel profile and link shown here.</span></label>
+          <div class="showcase-submit"><button type="submit" class="primary-button">Submit for review</button><p>Every submission is reviewed before appearing. Approved channels may show your public profile name, image and bio alongside your channel link.</p></div>
           <p class="showcase-submit-status" data-showcase-submit-status role="status" tabindex="-1"></p>
         </form>
       </dialog>
@@ -174,6 +174,6 @@
     <form id="save-look-form" class="save-look-form"><label for="saved-look-name">Name your current look<input id="saved-look-name" type="text" maxlength="32" required autocomplete="off" placeholder="e.g. Friday night stream"></label><button type="submit" class="primary-button">Save look</button></form>
     <p id="saved-look-status" class="saved-look-status" role="status"></p><ul id="saved-looks-list" class="saved-looks-list"></ul><p id="saved-looks-empty" class="saved-looks-empty">Your favorite setups will appear here. Save your current look to get started.</p>
   </dialog>
-  <script type="module" src="./controller/streamer-app.js?v=builder-2"></script>
+  <script type="module" src="./controller/streamer-app.js?v=channel-profiles-1"></script>
 </body>
 </html>

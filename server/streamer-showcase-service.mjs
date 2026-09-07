@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
 import { StreamerChannel } from '../controller/streamer-channel.js';
+import { StreamerProfileService } from './streamer-profile-service.mjs';
 
 export class ShowcaseError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
@@ -9,7 +10,9 @@ export class ShowcaseError extends Error {
 export class StreamerShowcaseService {
   static storeName = 'dualsense-streamer-showcase';
   static directoryKey = 'channels/v1';
-  constructor(store, { now = Date.now } = {}) { this.store = store; this.now = now; }
+  static profileRefreshMs = 24 * 60 * 60 * 1000;
+  static profileMaxAgeMs = 30 * 24 * 60 * 60 * 1000;
+  constructor(store, { now = Date.now, profiles = new StreamerProfileService() } = {}) { this.store = store; this.now = now; this.profiles = profiles; }
 
   async change(key, transform) {
     for (let attempt = 0; attempt < 8; attempt++) {
@@ -52,7 +55,37 @@ export class StreamerShowcaseService {
     return { channels: Object.values(directory?.channels ?? {})
       .filter(channel => channel.state === 'approved')
       .sort((a, b) => b.reviewedAt - a.reviewedAt || a.name.localeCompare(b.name))
-      .map(({ name, channelUrl }) => ({ name, channelUrl })) };
+      .map(({ name, channelUrl, profile, profileFetchedAt }) => ({ name, channelUrl,
+        ...(profile && Number.isFinite(profileFetchedAt) && this.now() - profileFetchedAt < StreamerShowcaseService.profileMaxAgeMs ? { profile: StreamerChannel.profile(profile) } : {}),
+      })) };
+  }
+
+  async refreshProfiles({ id, force = false, limit = 20 } = {}) {
+    const now = this.now();
+    const candidates = (await this.reviewList())
+      .filter(channel => channel.state === 'approved' && (!id || channel.id === id) && this.profiles.available(channel.channelUrl))
+      .filter(channel => force || channel.profileCheckedAt == null || now - channel.profileCheckedAt >= StreamerShowcaseService.profileRefreshMs)
+      .sort((a, b) => (a.profileCheckedAt ?? -Infinity) - (b.profileCheckedAt ?? -Infinity))
+      .slice(0, limit);
+    if (!candidates.length) return { updated: 0, failed: 0 };
+    const results = await Promise.all(candidates.map(async channel => {
+      try { return { channel, profile: await this.profiles.fetch(channel.channelUrl) }; }
+      catch { return { channel }; }
+    }));
+    let updated = 0, failed = 0;
+    await this.change(StreamerShowcaseService.directoryKey, current => {
+      const channels = { ...current?.channels };
+      updated = 0; failed = 0;
+      for (const { channel, profile } of results) {
+        const latest = channels[channel.id];
+        // A lookup finishing after rejection or another refresh must not undo it.
+        if (latest?.state !== 'approved' || latest.reviewedAt !== channel.reviewedAt || latest.profileCheckedAt !== channel.profileCheckedAt) continue;
+        channels[channel.id] = { ...latest, profileCheckedAt: now, ...(profile ? { profile: StreamerChannel.profile(profile), profileFetchedAt: now } : {}) };
+        if (profile) updated++; else failed++;
+      }
+      return { channels };
+    });
+    return { updated, failed };
   }
 
   // Moderation is available only to the local review command with Netlify access.
@@ -70,5 +103,9 @@ export class StreamerShowcaseService {
       if (channels[id].state === state) return current;
       return { channels: { ...channels, [id]: { ...channels[id], state, reviewedAt: this.now() } } };
     });
+    if (state === 'approved') {
+      try { await this.refreshProfiles({ id, force: true }); }
+      catch { /* Approval persists even when metadata storage is temporarily unavailable. */ }
+    }
   }
 }

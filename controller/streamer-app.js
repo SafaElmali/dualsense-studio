@@ -9,7 +9,7 @@ import { StreamerDemo } from './streamer-demo.js?v=feature-events-1';
 import { StreamerSettings } from './streamer-settings.js?v=arrow-controls-2';
 import { StreamerRotation } from './streamer-rotation.js';
 import { AppEvents } from './app-events.js';
-import { StreamerShowcaseView } from './streamer-showcase.js?v=channel-dialog-1';
+import { StreamerShowcaseView } from './streamer-showcase.js?v=channel-profiles-1';
 import { StreamerBuilderView } from './streamer-builder-view.js?v=builder-2';
 
 const $ = id => document.getElementById(id);
