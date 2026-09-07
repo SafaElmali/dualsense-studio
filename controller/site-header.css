@@ -1,0 +1,50 @@
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #ffffff26;
+  border-radius: 10px;
+  background: #ffffff05;
+  color: #e5e9e7;
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+.github-link:hover {
+  background: #ffffff0e;
+  border-color: #ffffff50;
+}
+.github-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.github-link svg { width: 19px; height: 19px; fill: currentColor; flex-shrink: 0; }
+.github-link .github-external { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .65; }
+.streamer-header-actions { display: flex; align-items: center; gap: 24px; flex-shrink: 0; }
+.streamer-header-actions .back-link { white-space: nowrap; }
+@media (max-width: 1200px) {
+  header .edition { display: none; }
+  .header-actions .mode { display: none; }
+}
+@media (max-width: 720px) {
+  .github-link { width: 44px; padding: 0; }
+  .github-link span, .github-link .github-external { display: none; }
+  .streamer-header-actions { gap: 16px; }
+  .streamer-header-actions .back-link { font-size: 12px; }
+}
+@media (max-width: 600px) {
+  header .brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 520px) {
+  .studio-link span { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .github-link { transition: none; }
+}

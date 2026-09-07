@@ -22,6 +22,7 @@ function fixture() {
   return { store, service: new StreamerShowcaseService(store, { now: () => now }), advance: ms => { now += ms; } };
 }
 const submission = (name = 'Test Channel', channelUrl = 'https://twitch.tv/testchannel') => ({ name, channelUrl, consent: true });
+const trustedContext = { ip: '192.0.2.23' };
 
 test('channel normalization accepts the supported channel formats and strips tracking data', () => {
   for (const [input, output, platform] of [
@@ -103,9 +104,9 @@ test('public endpoint cannot read pending submissions or moderate channels', asy
   const { service } = fixture(); const handler = new StreamerShowcaseHandler(() => service);
   const url = 'https://studio.example/.netlify/functions/streamers';
   const post = body => new Request(url, { method: 'POST', headers: { Origin: 'https://studio.example', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  assert.equal((await handler.handle(post(submission()))).status, 202);
+  assert.equal((await handler.handle(post(submission()), trustedContext)).status, 202);
   const [{ id }] = await service.reviewList();
-  const update = await handler.handle(post({ action: 'approve', id, state: 'approved' }));
+  const update = await handler.handle(post({ action: 'approve', id, state: 'approved' }), trustedContext);
   assert.equal(update.status, 400);
   assert.equal((await handler.handle(new Request(url, { method: 'PATCH' }))).status, 405);
   assert.deepEqual(await (await handler.handle(new Request(url + '?state=pending'))).json(), { channels: [] });
@@ -121,9 +122,10 @@ test('HTTP boundary rejects foreign origins, malformed, oversized and invalid re
   const post = (body, headers = {}) => new Request(url, { method: 'POST', headers: { Origin: 'https://studio.example', 'Content-Type': 'application/json', ...headers }, body });
   for (const [request, status] of [
     [post('{}', { Origin: 'https://other.test' }), 403], [post('{}', { 'Content-Type': 'text/plain' }), 415],
+    [post('{}', { 'Content-Type': 'application/jsonp' }), 415],
     [post('broken'), 400], [post('null'), 400], [post('[]'), 400], [post(' '.repeat(2049)), 413],
     [post(JSON.stringify(submission('Name', 'https://evil.test'))), 400],
-  ]) assert.equal((await handler.handle(request)).status, status);
+  ]) assert.equal((await handler.handle(request, trustedContext)).status, status);
   assert.equal((await handler.handle(post(JSON.stringify({ ...submission(), website: 'bot' })))).status, 202);
   assert.deepEqual(await service.reviewList(), []);
   const unavailable = new StreamerShowcaseHandler(() => { throw new Error('SECRET credential'); });
@@ -143,14 +145,50 @@ test('the client never reports successful submission for unavailable hosting or 
   await assert.rejects(offline.list(), /Check your connection/);
   const unsafe = new StreamerShowcaseClient(async () => Response.json({ channels: [{ name: '<script>', channelUrl: 'javascript:alert(1)' }] }));
   await assert.rejects(unsafe.list());
+  const throttled = new StreamerShowcaseClient(async () => new Response('Too Many Requests', { status: 429 }));
+  await assert.rejects(throttled.submit(submission()), /Too many requests/);
 });
 
 test('client submits to the same-origin API and receives only approved channels after review', async () => {
   const { service } = fixture(); const handler = new StreamerShowcaseHandler(() => service);
-  const client = new StreamerShowcaseClient((path, options) => handler.handle(new Request('https://studio.example' + path, { ...options, headers: { ...options.headers, Origin: 'https://studio.example' } })));
+  const client = new StreamerShowcaseClient((path, options) => handler.handle(new Request('https://studio.example' + path, { ...options, headers: { ...options.headers, Origin: 'https://studio.example' } }), trustedContext));
   await client.submit(submission()); assert.deepEqual(await client.list(), []);
   const [{ id }] = await service.reviewList(); await service.review(id, 'approved');
   assert.deepEqual(await client.list(), [{ name: 'Test Channel', channelUrl: 'https://twitch.tv/testchannel' }]);
+});
+
+test('missing or invalid hosting IP cannot disable limits or be replaced by spoofed client headers', async () => {
+  const { service, store } = fixture(); const handler = new StreamerShowcaseHandler(() => service);
+  const request = spoofedIp => new Request('https://studio.example/.netlify/functions/streamers', {
+    method: 'POST', headers: { Origin: 'https://studio.example', 'Content-Type': 'application/json', 'X-Forwarded-For': spoofedIp, 'X-NF-Client-Connection-IP': spoofedIp },
+    body: JSON.stringify(submission()),
+  });
+  for (const context of [{}, { ip: '' }, { ip: 'not-an-ip' }]) {
+    assert.equal((await handler.handle(request('198.51.100.1'), context)).status, 503);
+  }
+  assert.equal(store.records.size, 0);
+  for (let i = 0; i < 5; i++) assert.equal((await handler.handle(request('198.51.100.' + i), trustedContext)).status, 202);
+  assert.equal((await handler.handle(request('198.51.100.99'), trustedContext)).status, 429);
+  assert.equal((await service.reviewList()).length, 1);
+  assert.deepEqual(await service.list(), { channels: [] });
+  // Another genuine visitor gets an independent limit.
+  assert.equal((await handler.handle(request('198.51.100.99'), { ip: '2001:db8::1' })).status, 202);
+});
+
+test('oversized streaming requests stop reading at the byte limit, even with no or false content length', async () => {
+  for (const length of [null, '1']) {
+    const { service, store } = fixture(); const handler = new StreamerShowcaseHandler(() => service);
+    let reads = 0, cancelled = false;
+    const body = new ReadableStream({
+      pull(controller) { reads++; controller.enqueue(new Uint8Array(1025)); },
+      cancel() { cancelled = true; },
+    }, { highWaterMark: 0 });
+    const headers = { Origin: 'https://studio.example', 'Content-Type': 'application/json' };
+    if (length !== null) headers['Content-Length'] = length;
+    const response = await handler.handle(new Request('https://studio.example/.netlify/functions/streamers', { method: 'POST', headers, body, duplex: 'half' }), trustedContext);
+    assert.equal(response.status, 413);
+    assert.equal(reads, 2); assert.equal(cancelled, true); assert.equal(store.records.size, 0);
+  }
 });
 
 test('showcase analytics exclude submitted details and asynchronous outcomes do not count as engagement', () => {

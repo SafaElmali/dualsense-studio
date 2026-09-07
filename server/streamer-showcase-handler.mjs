@@ -1,8 +1,31 @@
 import { ChannelError } from '../controller/streamer-channel.js';
 import { ShowcaseError } from './streamer-showcase-service.mjs';
+import { MIMEType } from 'node:util';
 
 export class StreamerShowcaseHandler {
+  static maxBodyBytes = 2048;
   constructor(createService) { this.createService = createService; }
+
+  async readBody(request) {
+    if (Number(request.headers.get('content-length')) > StreamerShowcaseHandler.maxBodyBytes) throw new ShowcaseError('This submission is too large.', 413);
+    if (!request.body) return '';
+    const reader = request.body.getReader();
+    const chunks = [];
+    let size = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > StreamerShowcaseHandler.maxBodyBytes) {
+          await reader.cancel();
+          throw new ShowcaseError('This submission is too large.', 413);
+        }
+        chunks.push(value);
+      }
+      return Buffer.concat(chunks, size).toString('utf8');
+    } finally { reader.releaseLock(); }
+  }
 
   async handle(request, context = {}) {
     const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
@@ -12,10 +35,10 @@ export class StreamerShowcaseHandler {
     try {
       const service = this.createService();
       if (request.method === 'GET') return reply(await service.list());
-      if (!request.headers.get('content-type')?.startsWith('application/json')) return reply({ error: 'Send a JSON request.' }, 415);
-      if (Number(request.headers.get('content-length')) > 2048) return reply({ error: 'This submission is too large.' }, 413);
-      const text = await request.text();
-      if (Buffer.byteLength(text, 'utf8') > 2048) return reply({ error: 'This submission is too large.' }, 413);
+      let contentType;
+      try { contentType = new MIMEType(request.headers.get('content-type') || ''); } catch { /* Invalid media types are rejected below. */ }
+      if (contentType?.essence !== 'application/json') return reply({ error: 'Send a JSON request.' }, 415);
+      const text = await this.readBody(request);
       let body;
       try { body = JSON.parse(text); } catch { return reply({ error: 'Invalid submission.' }, 400); }
       if (!body || typeof body !== 'object' || Array.isArray(body)) return reply({ error: 'Invalid submission.' }, 400);

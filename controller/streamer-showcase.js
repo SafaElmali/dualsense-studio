@@ -14,6 +14,8 @@ export class StreamerShowcaseClient {
         signal: AbortSignal.timeout(12000),
       });
     } catch { throw new Error('Could not reach the showcase. Check your connection and try again.'); }
+    // Edge rate limits may return a plain-text response before the function runs.
+    if (response.status === 429) throw new Error('Too many requests. Please wait a little and try again.');
     if (!response.headers.get('content-type')?.includes('application/json') || response.status === 404) {
       throw new Error('The showcase is not available here yet. Please try again later or reach out to @SafaElmali on X.');
     }

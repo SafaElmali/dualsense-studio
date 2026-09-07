@@ -62,7 +62,7 @@ export class ControllerAnalytics {
   static propertyValues = {
     platform: ['Twitch', 'YouTube', 'Kick'],
     topic: ['connection', 'stick_drift', 'device_access', 'virtual_controller', 'compatibility', 'independence', 'pricing', 'obs_setup', 'transparent_background', 'customization', 'demo', 'stick_arrows'],
-    destination: ['studio', 'streamer', 'obs_setup', 'x'],
+    destination: ['studio', 'streamer', 'obs_setup', 'x', 'github'],
     placement: ['brand', 'header', 'intro', 'help'],
     tab: ['camera', 'appearance', 'inputs'],
     provider: ['patreon', 'buymeacoffee'],

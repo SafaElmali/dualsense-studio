@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isIP } from 'node:net';
 import { StreamerChannel } from '../controller/streamer-channel.js';
 
 export class ShowcaseError extends Error {
@@ -21,7 +22,8 @@ export class StreamerShowcaseService {
   }
 
   async limit(ip) {
-    if (!ip) return;
+    // Only the hosting context may supply this value, never a visitor's headers.
+    if (typeof ip !== 'string' || !isIP(ip)) throw new ShowcaseError('Submissions are temporarily unavailable. Please try again later.', 503);
     const key = 'limits/' + createHash('sha256').update(ip).digest('hex');
     const now = this.now();
     await this.change(key, current => {
