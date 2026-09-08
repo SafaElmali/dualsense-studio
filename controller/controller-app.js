@@ -362,7 +362,10 @@ $('enable-touchpad').addEventListener('click', async () => {
 $('disable-triggers').addEventListener('click', () => { stopTriggers(); analytics.featureAction('trigger_effects', 'disabled', { surface: 'studio' }); });
 window.addEventListener('blur', () => { if (triggers.device) stopTriggers(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopTriggers(); });
-window.addEventListener('pagehide', () => { void triggers.disconnect().catch(() => {}); });
+window.addEventListener('pagehide', () => {
+  // Drain diagnostic effect cleanup before closing the shared HID connection.
+  void Promise.resolve(diagnostics?.stopTest()).then(() => triggers.disconnect()).catch(() => {});
+});
 
 function later(fn, milliseconds) { const timer = setTimeout(() => { timers.delete(timer); fn(); }, milliseconds); timers.add(timer); }
 function status(text, active = true) {
@@ -667,6 +670,27 @@ diagnostics = new DiagnosticsView({
   onAction: (feature, action, properties) => analytics.featureAction(feature, action, properties),
   getPad: () => gamepads()[gamepadIndex] || gamepads().find(Boolean),
   labels: padMap.map(id => labels[id]),
+  controller: triggers,
+  getLightColor: () => appearance.input('light').value,
+  onConnect: async () => {
+    if (triggerBusy || range?.connecting) throw new Error('Another controller connection is in progress. Try again in a moment.');
+    triggerBusy = true; renderBattery(); renderTouchpad(); renderGyro();
+    try { await triggers.connect({ enableEffects: false }); }
+    finally {
+      triggerBusy = false; renderBattery(); renderTouchpad(); renderGyro();
+      $('enable-triggers').disabled = triggers.active || !navigator.hid;
+    }
+  },
+  onMatchFinish: finish => {
+    if (!view?.ready) return false;
+    if (finish.preset) appearance.setColor('body', view.setFinish(finish.preset), false);
+    else if (finish.color) { view.setFinish('white'); appearance.setColor('body', finish.color); }
+    else return false;
+    document.querySelectorAll('[data-finish]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.finish === finish.preset)));
+    $('finish-label').textContent = finish.name;
+    $('announcement').textContent = finish.name + ' matched to the 3D controller';
+    return true;
+  },
   onOpen: () => { stopTriggers(); releaseAll(); touchpad.setPaused(true); if (view) view.suspended = true; },
   onClose: closeStudioTool,
 });

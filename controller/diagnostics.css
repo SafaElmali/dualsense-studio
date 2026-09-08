@@ -1,0 +1,55 @@
+#diagnostics { width:min(920px,calc(100vw - 32px)); }
+#diagnostics [hidden] { display:none!important; }
+.diagnostics-connection,.diagnostics-section-title { display:flex;align-items:center;justify-content:space-between;gap:20px; }
+.diagnostics-connection p { min-width:0;overflow-wrap:anywhere; }
+.diagnostics-connection button { flex-shrink:0; }
+#diagnostics-hardware-status { margin-top:0;font-size:12px; }
+.diagnostics-tabs { display:flex;gap:8px;border-bottom:1px solid #ffffff17;margin:24px 0;padding-bottom:10px; }
+.diagnostics-tabs button { padding:11px 17px;background:transparent;color:#9daac0;font:inherit;font-size:13px;border:1px solid transparent;border-radius:8px;cursor:pointer; }
+.diagnostics-tabs button[aria-selected=true] { background:#f4d87813;color:#f4d878;border-color:#f4d87835; }
+.diagnostics-section-title { margin:0 0 22px; }
+.diagnostics-section-title h3 { margin:0 0 7px;font-size:17px; }
+.diagnostics-section-title p,.diagnostics-footnote { margin:0;color:#98a8bd;font-size:12px;line-height:1.65; }
+.diagnostics-sticks canvas { display:block;width:min(100%,220px);height:auto;margin:0 auto 12px; }
+.diagnostics-sticks section { padding:20px 12px; }
+.diagnostics-sticks p:last-child { color:#f4d878; }
+.diagnostics-footer { display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:28px 0 0;padding-top:18px;border-top:1px solid #ffffff13;font-size:11px;color:#8795aa;line-height:1.7; }
+.diagnostics-footer a { color:#b3c2d7;text-underline-offset:3px; }
+.checkup-layout { display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px; }
+#checkup-steps { display:flex;flex-direction:column;gap:6px; }
+#checkup-steps button { display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;padding:12px;background:#151d29;color:#a1b1c6;border:1px solid #ffffff13;border-radius:8px;cursor:pointer;font:inherit;font-size:12px; }
+#checkup-steps button[aria-current=step] { color:#f4d878;border-color:#f4d87888;background:#f4d8780b; }
+#checkup-steps button span:last-child { font-size:10px;color:#8ea6bb; }
+#checkup-steps button[data-result=observed] span:last-child,#checkup-steps button[data-result=confirmed] span:last-child { color:#9cd2b2; }
+#checkup-steps button[data-result=issue] span:last-child { color:#f4b694; }
+.checkup-current { min-width:0;padding:26px;border:1px solid #ffffff17;border-radius:12px;background:linear-gradient(135deg,#1b2533,#131b26); }
+.checkup-current #checkup-title { font-size:25px;margin:15px 0 12px; }
+#checkup-instruction { font-size:14px;line-height:1.7;color:#b4c3d6; }
+.checkup-feedback { display:flex;flex-wrap:wrap;gap:7px;margin:24px 0 16px;min-height:38px; }
+.checkup-feedback span { padding:8px 10px;border-radius:6px;border:1px solid #ffffff19;font-size:11px;color:#9baabd; }
+.checkup-feedback span[data-done=true] { border-color:#9cd2b244;background:#9cd2b20b;color:#9cd2b2; }
+.checkup-result-actions,.checkup-navigation { display:flex;flex-wrap:wrap;gap:8px; }
+.checkup-result-actions button { font-size:11px; }
+.checkup-navigation { border-top:1px solid #ffffff13;padding-top:20px;margin-top:24px;justify-content:space-between; }
+#checkup-progress { font-size:12px;color:#f4d878;white-space:nowrap; }
+.checkup-motion-bars { display:grid;gap:10px;margin:20px 0 10px; }
+.checkup-motion-bars label { display:flex;align-items:center;gap:10px;font-size:12px;color:#b4c3d6; }
+.checkup-motion-bars meter { flex:1;height:12px;accent-color:#f4d878; }
+.diagnostics-details { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:24px 0; }
+.diagnostics-details div { background:#151d29;border:1px solid #ffffff13;border-radius:10px;padding:18px; }
+.diagnostics-details dt { font-size:11px;color:#98a8bd;margin-bottom:8px; }
+.diagnostics-details dd { margin:0;color:#dfebf7;font-size:15px;overflow-wrap:anywhere; }
+#diagnostics button:disabled { cursor:default;opacity:.4; }
+#diagnostics button:focus-visible,#diagnostics input:focus-visible { outline:2px solid #f4d878;outline-offset:3px; }
+@media(max-width:600px) {
+  #diagnostics { width:calc(100vw - 16px); }
+  .diagnostics-connection,.diagnostics-section-title { align-items:flex-start;flex-direction:column;gap:10px; }
+  .diagnostics-tabs { gap:3px; }
+  .diagnostics-tabs button { font-size:11px;padding:10px 8px;flex:1; }
+  .checkup-layout { grid-template-columns:1fr; }
+  #checkup-steps { display:grid;grid-template-columns:repeat(3,minmax(0,1fr)); }
+  #checkup-steps button { flex-direction:column;align-items:flex-start;padding:9px;font-size:10px; }
+  .checkup-current { padding:18px; }
+  .diagnostics-details { grid-template-columns:1fr; }
+  .diagnostics-sticks output { font-size:10px; }
+}

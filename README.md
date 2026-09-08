@@ -11,7 +11,7 @@ Explore it in 3D, test your aim, or turn the touchpad into a canvas. All in your
 ## Make every input count
 
 - **Explore in 3D.** Rotate the controller, press buttons, move the sticks, and make it your own with custom colors.
-- **Check your controller.** See resting stick movement, button presses, and trigger pressure.
+- **Check your controller.** Measure resting sticks, trace circularity, run a guided hardware checkup, and download your results.
 - **Find your balance.** Roll through three marble mazes using controller tilt, a stick, or arrow keys.
 - **Find your aim.** Take on target practice, climb the community leaderboard, and share your scorecard.
 - **Paint with your touchpad.** Draw glowing trails and save your creation.

@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="./controller/controller.css?v=trigger-popover-1">
   <link rel="stylesheet" href="./controller/site-info.css?v=contact-1">
   <link rel="stylesheet" href="./controller/range.css">
+  <link rel="stylesheet" href="./controller/diagnostics.css">
   <link rel="stylesheet" href="./controller/leaderboard.css?v=controller-20s-v2">
   <link rel="stylesheet" href="./controller/battery.css?v=ds-logo-1">
   <link rel="stylesheet" href="./controller/appearance.css?v=highlights-2">
@@ -146,7 +147,7 @@
   <section class="telemetry" aria-label="Live controller inputs"><div class="readout"><span class="mini-stick"><i id="left-dot"></i></span><div><div class="readout-label">LEFT STICK</div><div class="readout-values"><span><b>X</b><output id="left-x">0.00</output></span><span><b>Y</b><output id="left-y">0.00</output></span></div></div></div><div class="readout"><span class="mini-stick"><i id="right-dot"></i></span><div><div class="readout-label">RIGHT STICK</div><div class="readout-values"><span><b>X</b><output id="right-x">0.00</output></span><span><b>Y</b><output id="right-y">0.00</output></span></div></div></div><div class="readout"><div><div class="readout-label">ADAPTIVE TRIGGERS</div><div class="readout-values"><span><b>L2</b><output id="l2-value">0%</output></span><span><b>R2</b><output id="r2-value">0%</output></span></div><div class="trigger-meters"><span class="trigger-meter"><i id="l2-meter"></i></span><span class="trigger-meter"><i id="r2-meter"></i></span></div></div></div><div class="readout"><div class="connect-note" id="connect-note">Have a controller? Connect it and press any button.</div></div></section>
   <section class="studio-tools" aria-label="Controller tools">
     <button id="open-drawing" type="button" aria-haspopup="dialog"><span class="tool-art tool-art-drawing" aria-hidden="true"><svg viewBox="0 0 88 72"><path class="tool-art-grid" d="M22 0V72M44 0V72M66 0V72M0 18H88M0 36H88M0 54H88"/><path class="tool-drawing-trail" d="M13 48C19 18 43 16 39 34S26 57 30 41 60 20 55 39 67 54 76 25"/><circle cx="76" cy="25" r="3"/></svg></span><span class="tool-copy"><span class="tool-eyebrow">CREATE</span><strong>Touchpad drawing</strong><small>Paint with light. Save your creation.</small></span><span class="tool-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button>
-    <button id="open-diagnostics" type="button" aria-haspopup="dialog"><span class="tool-art tool-art-diagnostics" aria-hidden="true"><svg viewBox="0 0 88 72"><path class="tool-art-grid" d="M22 0V72M44 0V72M66 0V72M0 18H88M0 36H88M0 54H88"/><circle class="tool-diagnostic-ring" cx="44" cy="36" r="23"/><circle class="tool-diagnostic-ring" cx="44" cy="36" r="12"/><path d="M44 8v9m0 38v9M16 36h9m38 0h9M44 36l9-8"/><circle class="tool-diagnostic-point" cx="53" cy="28" r="3"/></svg></span><span class="tool-copy"><span class="tool-eyebrow">INSPECT</span><strong>Controller diagnostics</strong><small>Check sticks, triggers, and every button.</small></span><span class="tool-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button>
+    <button id="open-diagnostics" type="button" aria-haspopup="dialog"><span class="tool-art tool-art-diagnostics" aria-hidden="true"><svg viewBox="0 0 88 72"><path class="tool-art-grid" d="M22 0V72M44 0V72M66 0V72M0 18H88M0 36H88M0 54H88"/><circle class="tool-diagnostic-ring" cx="44" cy="36" r="23"/><circle class="tool-diagnostic-ring" cx="44" cy="36" r="12"/><path d="M44 8v9m0 38v9M16 36h9m38 0h9M44 36l9-8"/><circle class="tool-diagnostic-point" cx="53" cy="28" r="3"/></svg></span><span class="tool-copy"><span class="tool-eyebrow">INSPECT</span><strong>Controller diagnostics</strong><small>Stick lab, guided checkup, and hardware details.</small></span><span class="tool-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button>
   </section>
   <section class="site-info" id="about" aria-labelledby="about-title">
     <div class="site-info-intro"><p class="site-eyebrow">EXPLORE YOUR CONTROLLER</p><h2 id="about-title">More than a button check.</h2><p>DualSense Studio is an interactive PS5 controller tester and playground in your browser. Explore the 3D model, or connect your DualSense over USB or Bluetooth to see your real inputs come to life.</p></div>
@@ -236,16 +237,50 @@
 </dialog>
 <dialog id="diagnostics" class="studio-dialog" aria-labelledby="diagnostics-heading">
   <div class="range-header"><div><span class="range-eyebrow">CONTROLLER STUDIO / CHECK</span><h2 id="diagnostics-heading">Know your controller.</h2></div><button id="diagnostics-close" class="retry-button">Back to controller</button></div>
-  <p id="diagnostics-device" class="studio-description">Connect a controller and press any button to begin.</p>
-  <div class="diagnostics-sticks">
-    <section><h3>Left stick</h3><div class="diagnostic-stick"><i id="diagnostics-left-dot"></i></div><output id="diagnostics-left-values">Waiting for controller</output><p id="diagnostics-left-center">No resting sample yet</p></section>
-    <section><h3>Right stick</h3><div class="diagnostic-stick"><i id="diagnostics-right-dot"></i></div><output id="diagnostics-right-values">Waiting for controller</output><p id="diagnostics-right-center">No resting sample yet</p></section>
+  <div class="diagnostics-connection"><p id="diagnostics-device" class="studio-description">Connect a controller and press any button to begin.</p><button id="diagnostics-connect" class="retry-button">Connect DualSense</button></div>
+  <p id="diagnostics-hardware-status" class="studio-description" role="status">Buttons and sticks work with a standard gamepad. Connect DualSense for motion, touchpad, and hardware tests.</p>
+  <div class="diagnostics-tabs" role="tablist" aria-label="Controller diagnostics">
+    <button id="diagnostics-tab-sticks" role="tab" aria-selected="true" aria-controls="diagnostics-panel-sticks" data-diagnostics-tab="sticks">Stick lab</button>
+    <button id="diagnostics-tab-checkup" role="tab" aria-selected="false" aria-controls="diagnostics-panel-checkup" tabindex="-1" data-diagnostics-tab="checkup">Guided checkup</button>
+    <button id="diagnostics-tab-details" role="tab" aria-selected="false" aria-controls="diagnostics-panel-details" tabindex="-1" data-diagnostics-tab="details">Controller details</button>
   </div>
-  <div class="studio-toolbar"><button id="diagnostics-measure" class="retry-button" disabled>Measure resting sticks</button><button id="diagnostics-reset" class="retry-button">Reset readings</button></div><p id="diagnostics-measure-status" class="studio-description" role="status">Let go of both sticks, then measure for two seconds. Readings have no added deadzone.</p>
-  <div class="diagnostic-triggers"><section><h3>L2 <output id="diagnostics-l2-value">0%</output></h3><progress id="diagnostics-l2" max="1" value="0" aria-label="L2 travel"></progress><p id="diagnostics-l2-travel">Observed travel</p></section><section><h3>R2 <output id="diagnostics-r2-value">0%</output></h3><progress id="diagnostics-r2" max="1" value="0" aria-label="R2 travel"></progress><p id="diagnostics-r2-travel">Observed travel</p></section></div>
-  <p class="studio-description">Slowly squeeze each trigger from released to fully pressed. Press and release every button; the count records each press.</p>
-  <div id="diagnostics-buttons" class="diagnostic-buttons" aria-label="Button response"></div>
-  <p class="studio-description">These are the readings your browser receives. This check does not change calibration or measure end-to-end input latency.</p>
+  <section id="diagnostics-panel-sticks" role="tabpanel" aria-labelledby="diagnostics-tab-sticks">
+    <div class="diagnostics-section-title"><div><h3>A closer look at your sticks.</h3><p>Check the center, then trace the full range.</p></div></div>
+    <div class="diagnostics-sticks">
+      <section><h3>Left stick</h3><canvas id="diagnostics-left-canvas" width="400" height="400" aria-label="Left stick position and outer-range sweep"></canvas><output id="diagnostics-left-values">Waiting for controller</output><p id="diagnostics-left-center">No resting sample yet</p><p id="diagnostics-left-range">Start a sweep to map the outer range</p></section>
+      <section><h3>Right stick</h3><canvas id="diagnostics-right-canvas" width="400" height="400" aria-label="Right stick position and outer-range sweep"></canvas><output id="diagnostics-right-values">Waiting for controller</output><p id="diagnostics-right-center">No resting sample yet</p><p id="diagnostics-right-range">Start a sweep to map the outer range</p></section>
+    </div>
+    <div class="studio-toolbar"><button id="diagnostics-measure" class="retry-button" disabled>Measure resting sticks</button><button id="diagnostics-sweep" class="retry-button" disabled>Start range sweep</button><button id="diagnostics-reset" class="retry-button">Reset readings</button></div>
+    <p id="diagnostics-measure-status" class="studio-description" role="status">Let go of both sticks, then measure for two seconds. Readings have no added deadzone.</p>
+    <p class="diagnostics-footnote">Circularity compares the outer trace to a circle. A lower number is not automatically better; shape and symmetry matter.</p>
+    <div class="diagnostic-triggers"><section><h3>L2 <output id="diagnostics-l2-value">0%</output></h3><progress id="diagnostics-l2" max="1" value="0" aria-label="L2 travel"></progress><p id="diagnostics-l2-travel">Observed travel</p></section><section><h3>R2 <output id="diagnostics-r2-value">0%</output></h3><progress id="diagnostics-r2" max="1" value="0" aria-label="R2 travel"></progress><p id="diagnostics-r2-travel">Observed travel</p></section></div>
+    <p class="studio-description">Slowly squeeze each trigger from released to fully pressed. Press and release every reported button.</p>
+    <div id="diagnostics-buttons" class="diagnostic-buttons" aria-label="Button response"></div>
+  </section>
+  <section id="diagnostics-panel-checkup" role="tabpanel" aria-labelledby="diagnostics-tab-checkup" hidden>
+    <div class="diagnostics-section-title"><div><h3>One controller. Nine quick checks.</h3><p>Work through each part at your own pace.</p></div><output id="checkup-progress">0 / 9 checked</output></div>
+    <div class="checkup-layout"><nav id="checkup-steps" aria-label="Checkup steps"></nav><div class="checkup-current">
+      <span id="checkup-step-number" class="range-eyebrow">CHECK 01 / 09</span><h3 id="checkup-title">Buttons</h3><p id="checkup-instruction"></p>
+      <div id="checkup-feedback" class="checkup-feedback"></div>
+      <p id="checkup-home-note" class="diagnostics-footnote" hidden>Home / PS is optional. macOS may use it to open another app, so you can leave it untested.</p>
+      <div id="checkup-motion" hidden><div class="checkup-motion-bars"><label>Pitch <meter id="checkup-pitch" min="0" max="90" value="0"></meter></label><label>Yaw <meter id="checkup-yaw" min="0" max="90" value="0"></meter></label><label>Roll <meter id="checkup-roll" min="0" max="90" value="0"></meter></label></div><p class="diagnostics-footnote">Live rotation speed · approximate °/s</p></div>
+      <div class="studio-toolbar"><button id="checkup-run" class="range-primary" hidden>Start test</button><button id="checkup-stop" class="retry-button" hidden>Stop test</button><button id="checkup-stick-lab" class="retry-button" hidden>Open stick lab</button></div>
+      <p id="checkup-status" class="studio-description" role="status"></p>
+      <div class="checkup-result-actions"><button id="checkup-confirm" class="retry-button" hidden>Worked for me</button><button id="checkup-issue" class="retry-button">I noticed an issue</button><button id="checkup-skip" class="retry-button">Skip this check</button></div>
+      <div class="checkup-navigation"><button id="checkup-previous" class="retry-button">Previous</button><button id="checkup-next" class="retry-button">Next check →</button></div>
+    </div></div>
+    <div class="studio-toolbar"><button id="checkup-reset" class="retry-button">Start a new checkup</button><button id="checkup-save" class="range-primary">Download checkup card</button></div>
+    <p class="diagnostics-footnote">“Observed” means the requested inputs were received. Effects are confirmed by you. Skipped and untested checks stay labeled on your card; this is not a repair diagnosis.</p>
+  </section>
+  <section id="diagnostics-panel-details" role="tabpanel" aria-labelledby="diagnostics-tab-details" hidden>
+    <div class="diagnostics-section-title"><div><h3>Meet the hardware.</h3><p>Read the model, board revision, firmware, and original finish.</p></div></div>
+    <button id="diagnostics-read-details" class="range-primary">Read controller details</button>
+    <dl id="diagnostics-details" class="diagnostics-details"></dl>
+    <button id="diagnostics-match-finish" class="retry-button" hidden>Match the 3D controller</button>
+    <p id="diagnostics-details-status" class="studio-description" role="status">Use USB for original-finish lookup. Details stay in this tab.</p>
+    <p class="diagnostics-footnote">The original finish is inferred from the controller’s serial code; replacement shells may differ. Solid colors are approximate, and special-edition artwork is not reproduced. Serial numbers are never displayed, stored, or included in downloads.</p>
+  </section>
+  <p class="diagnostics-footer">Checks do not change your controller’s calibration. <a href="https://github.com/dualshock-tools/dualshock-tools.github.io" target="_blank" rel="noopener noreferrer">Built with research from DualShock Tools ↗</a></p>
 </dialog>
 <dialog id="leaderboard" class="studio-dialog" aria-labelledby="leaderboard-heading">
   <div class="leaderboard-topbar">

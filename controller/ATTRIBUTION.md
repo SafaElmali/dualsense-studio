@@ -15,3 +15,7 @@ Source GLB mirror: https://github.com/Manav-Sonawane/Playstation-Revamp/blob/mai
 Modifications: split connected parts into named controls; baked original transforms; preserved original geometry, UVs, and textures; adjusted rendered materials and lighting; added projected button markings and interactive button, trigger, and joystick animations. This is an independent recreation, not an official Sony product or dimensional CAD model.
 
 Three.js version 0.180.0 is included locally under its MIT license; see `vendor/three/LICENSE`.
+
+## Controller diagnostics
+
+Stick analysis and DualSense hardware test research adapted from DualShock Calibration GUI (MIT). See [DIAGNOSTICS-NOTICES.md](DIAGNOSTICS-NOTICES.md) for source revision, modifications, and the complete license notice.
