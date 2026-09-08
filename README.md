@@ -1,3 +1,5 @@
+**Public playground edition.** This repository contains the controller playground. Streamer mode and the community gallery remain available on [dualsense.studio](https://dualsense.studio); their implementation is maintained separately.
+
 # DualSense Studio
 
 **Your PS5 controller, with more to play with.**
