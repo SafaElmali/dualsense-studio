@@ -34,7 +34,9 @@ Home toggles the simulated light bars. Microphone mute remains a visual simulati
 
 In desktop Chrome or Edge, connect a Sony DualSense or DualSense Edge using USB or Bluetooth, then click **Enable trigger effects** and select it in the browser device picker. **Pistol** (default, previously Shooting) creates a crisp resistance wall and release. **Shotgun** has a heavier, longer pull before the break. Release to rearm either single-shot effect. **LMG** cycles strong trigger pulses at 10 Hz while held past the first third of travel. **SMG** uses lighter, faster pulses at 18 Hz. Release the physical trigger to stop the pulses. **Resistance** provides the original gentle, steady force. These are stylized presets, not replicas of real weapons or a specific game. You can switch effects while enabled; changing modes while Off leaves them off. Squeeze the physical L2/R2 triggers to feel it; the Gamepad API continues to mirror your inputs.
 
-**Off**, **Reset**, opening Controls, and leaving the tab send the explicit Off effect. Returning to the tab requires enabling effects again. Closing the page attempts to release and close the device; abrupt browser termination cannot guarantee a final hardware message. Disconnect the controller if resistance persists.
+Open **Triggers** at the upper-left of the 3D controller to see **Feel the triggers**. Scroll vertically through the illustrated effect cards, or use the arrow keys to select a card. The enable and off controls remain visible at the bottom. Click outside, press Escape, or use the close button to dismiss the dropdown; closing it keeps your current effect setting. The **Effects off / Effects on** indicator reflects whether hardware effects are active; selecting a card by itself does not enable them.
+
+**Turn off**, **Reset**, opening Controls, and leaving the tab send the explicit Off effect. Returning to the tab requires enabling effects again. Closing the page attempts to release and close the device; abrupt browser termination cannot guarantee a final hardware message. Disconnect the controller if resistance persists.
 
 Safari, Firefox, and browsers without WebHID keep the virtual controls but disable hardware effects. HTTPS or localhost is required. If Bluetooth is unavailable or another controller app has exclusive access, try a USB data cable and close that app.
 
@@ -44,7 +46,7 @@ Protocol references and the adapted trigger encoder's license are in [controller
 
 ## Custom trigger presets
 
-Expand **Customize & share this preset** under **Feel the triggers**. Strength runs from 1 to 8. LMG and SMG also support pulse speeds from 1 to 30 Hz; single-shot and steady-resistance modes do not use a pulse speed. Slider changes apply when released, using the existing serialized hardware writes. **Reset preset** restores the selected mode's defaults. Changing the mode also restores its defaults.
+Open **Triggers**, scroll past the effect cards, and expand **Customize & share this preset**. Strength runs from 1 to 8. LMG and SMG also support pulse speeds from 1 to 30 Hz; single-shot and steady-resistance modes do not use a pulse speed. Slider changes apply when released, using the existing serialized hardware writes. **Reset preset** restores the selected mode's defaults. Changing the mode also restores its defaults. Shared preset links open the dropdown with their effect selected and effects off.
 
 **Copy preset link** puts the mode, strength, and speed in the URL fragment. A visible link is provided if clipboard access is unavailable. Loading a link validates all settings and never requests controller access or enables effects. The recipient must choose **Enable trigger effects**. Customization while Off stays off. Target practice selects each weapon's default physical preset to keep its established firing cadence.
 

@@ -7,7 +7,7 @@ import { ButtonHighlight } from './button-highlight.js?v=stick-feedback-1';
 import { MeshBVH, acceleratedRaycast } from './vendor/three-mesh-bvh/index.module.min.js';
 
 export class DualSenseView {
-  constructor(canvas, input, { pauseWhenOffscreen = false } = {}) {
+  constructor(canvas, input, { pauseWhenOffscreen = false, idleMotion = null } = {}) {
     this.canvas = canvas;
     this.input = input;
     this.controls = new Map();
@@ -46,7 +46,10 @@ export class DualSenseView {
     this.raycaster.firstHitOnly = true;
     this.cursor = new THREE.Vector2();
     this.model = new THREE.Group();
-    this.scene.add(this.model);
+    // Presentation motion stays outside the actual camera pose and input transforms.
+    this.idleMotion = idleMotion ? { canAnimate: idleMotion, group: new THREE.Group(), time: 0, quietFor: 0 } : null;
+    if (this.idleMotion) this.idleMotion.group.add(this.model);
+    this.scene.add(this.idleMotion?.group || this.model);
     this.scene.add(new THREE.HemisphereLight(0xf1f4ff, 0x282c3a, .65));
     const key = new THREE.DirectionalLight(0xfff9f0, 2.3);
     key.position.set(-3, 5, 7); key.castShadow = true;
@@ -325,6 +328,7 @@ export class DualSenseView {
   }
 
   setView(view, { resetZoom = true } = {}) {
+    this.resetIdleMotion();
     const poses = {
       front: { x: 0, y: 0, z: 0 }, back: { x: .06, y: Math.PI, z: 0 },
       angle: { x: .20, y: -.50, z: -.045 },
@@ -343,6 +347,36 @@ export class DualSenseView {
   motion({ orientation }) {
     const euler = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().fromArray(orientation));
     this.pose = { x: euler.x, y: euler.y, z: euler.z };
+  }
+
+  resetIdleMotion() {
+    if (!this.idleMotion) return;
+    this.idleMotion.time = 0;
+    this.idleMotion.quietFor = 0;
+    this.idleMotion.group.position.set(0, 0, 0);
+    this.idleMotion.group.rotation.set(0, 0, 0);
+  }
+
+  updateIdleMotion(dt) {
+    const idle = this.idleMotion;
+    if (!idle) return;
+    if (!this.ready || this.reducedMotion.matches || this.gyroEnabled) { this.resetIdleMotion(); return; }
+    const interacting = this.hover || this.input.buttons.size || this.touchSources.size || ['left', 'right'].some(side => {
+      const axis = this.input.axis(side);
+      return Math.hypot(axis.x, axis.y) > .01;
+    });
+    // Freeze the presentation transform so a hovered or held control never drifts.
+    if (interacting || !idle.canAnimate()) { idle.quietFor = 0; return; }
+    idle.quietFor += dt;
+    if (idle.quietFor < 2.5) return;
+    idle.time += dt;
+    const fade = 1 - Math.exp(-idle.time * .9);
+    idle.group.position.y = Math.sin(idle.time * .8) * .075 * fade;
+    idle.group.rotation.set(
+      Math.sin(idle.time * .55) * .035 * fade,
+      Math.sin(idle.time * .4) * .065 * fade,
+      Math.sin(idle.time * .65) * .012 * fade,
+    );
   }
 
   hit(clientX, clientY) {
@@ -413,6 +447,7 @@ export class DualSenseView {
     if (document.hidden || this.contextLost || this.suspended || this.inViewport === false) return;
     const dt = Math.min((time - (this.previousTime || time)) / 1000, .05);
     this.previousTime = time;
+    this.updateIdleMotion(dt);
     const blend = this.reducedMotion.matches ? 1 : 1 - Math.exp(-18 * dt);
     const cameraBlend = this.reducedMotion.matches ? 1 : 1 - Math.exp(-(this.gyroEnabled ? 30 : 8) * dt);
     const targetOrientation = new THREE.Quaternion().setFromEuler(new THREE.Euler(this.pose.x, this.pose.y, this.pose.z));

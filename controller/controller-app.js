@@ -2,6 +2,7 @@ import { StickArrowControls } from './stick-arrow-controls.js';
 import { SupportView } from './support-view.js?v=support-2';
 import { supportUrls } from './support-config.js?v=coffee-only-1';
 import { AdaptiveTriggers } from './adaptive-triggers.js';
+import { TriggerPopoverView } from './trigger-popover-view.js';
 import { AppEvents } from './app-events.js';
 import { ControllerInput } from './input-state.js';
 import { InputCamera } from './input-camera.js';
@@ -10,7 +11,7 @@ import { BatteryInput } from './battery-input.js';
 import { BatteryView } from './battery-view.js';
 import { AppearanceView } from './appearance-view.js?v=highlights-2';
 import { TouchpadInput } from './touchpad-input.js';
-import { DualSenseView } from './controller-view.js?v=performance-1';
+import { DualSenseView } from './controller-view.js?v=idle-motion-1';
 import { TouchDrawingView } from './touch-drawing-view.js?v=feature-events-1';
 import { DiagnosticsView } from './diagnostics-view.js';
 import { LeaderboardClient, LeaderboardView } from './leaderboard.js?v=controller-20s-v2';
@@ -46,6 +47,7 @@ $('auto-view').addEventListener('click', () => { setAutoView(!inputCamera.enable
 
 const leaderboardClient = new LeaderboardClient();
 const triggerStatus = $('trigger-effect-status');
+const triggerPopover = new TriggerPopoverView();
 let triggerBusy = false, sensorNoticeTimer;
 let lightColorTimer;
 const appearance = new AppearanceView({
@@ -247,6 +249,9 @@ const triggers = new AdaptiveTriggers(navigator.hid, state => {
   gyro.attach(state.device); renderGyro();
   void touchpad.attach(state.device, triggers.transport?.name === 'Bluetooth');
   triggerStatus.textContent = state.message;
+  $('trigger-state').textContent = state.active ? 'Effects on' : 'Effects off';
+  $('trigger-state').dataset.active = state.active;
+  $('open-trigger-panel').dataset.active = state.active;
   $('disable-triggers').disabled = !state.connected;
   $('enable-triggers').textContent = state.active ? 'Trigger effects enabled' : 'Enable trigger effects';
   $('enable-triggers').disabled = triggerBusy || state.active || !navigator.hid;
@@ -263,11 +268,10 @@ if (!navigator.hid || !window.isSecureContext) {
 function stopTriggers() {
   void triggers.pause().catch(error => { triggerStatus.textContent = error.message; });
 }
-const triggerMode = $('trigger-mode');
-triggerMode.replaceChildren(...Object.entries(AdaptiveTriggers.presets).map(([mode, preset]) => new Option(preset.label, mode)));
-triggerMode.value = triggers.mode;
 function describeTriggerMode() {
-  const preset = AdaptiveTriggers.presetFor(triggerMode.value, triggers.tuning);
+  const preset = AdaptiveTriggers.presetFor(triggers.mode, triggers.tuning);
+  $('trigger-current-preset').textContent = preset.label;
+  for (const input of document.querySelectorAll('input[name="trigger-mode"]')) input.checked = input.value === triggers.mode;
   $('trigger-strength').value = preset.strength;
   $('trigger-speed').value = preset.frequency || 10;
   $('trigger-speed').disabled = preset.type !== 'vibration';
@@ -279,7 +283,7 @@ function describeTuning() {
   $('trigger-speed-label').textContent = $('trigger-speed').disabled ? 'Not used in this mode' : $('trigger-speed').value + ' Hz';
 }
 function tuningValues() { return { strength: Number($('trigger-strength').value), speed: $('trigger-speed').disabled ? 0 : Number($('trigger-speed').value) }; }
-function presetProperties() { const { strength, speed } = tuningValues(); return { mode: triggerMode.value, strength, speed_hz: speed }; }
+function presetProperties() { const { strength, speed } = tuningValues(); return { mode: triggers.mode, strength, speed_hz: speed }; }
 document.querySelector('.trigger-custom summary').addEventListener('click', event => {
   if (!event.currentTarget.parentElement.open) analytics.featureAction('trigger_presets', 'opened');
 });
@@ -292,13 +296,13 @@ for (const id of ['trigger-strength', 'trigger-speed']) {
   $(id).addEventListener('change', () => { analytics.featureAction('trigger_presets', 'changed', presetProperties()); void triggers.setTuning(tuningValues()).catch(error => { triggerStatus.textContent = error.message; }); });
 }
 $('trigger-defaults').addEventListener('click', () => {
-  const pending = triggers.setMode(triggerMode.value); describeTriggerMode();
-  analytics.featureAction('trigger_presets', 'reset', { mode: triggerMode.value });
+  const pending = triggers.setMode(triggers.mode); describeTriggerMode();
+  analytics.featureAction('trigger_presets', 'reset', { mode: triggers.mode });
   void pending.catch(error => { triggerStatus.textContent = error.message; });
 });
 $('trigger-share').addEventListener('click', async () => {
   const properties = presetProperties();
-  const link = AdaptiveTriggers.setup.link(location.href, { mode: triggerMode.value, ...tuningValues() });
+  const link = AdaptiveTriggers.setup.link(location.href, { mode: triggers.mode, ...tuningValues() });
   $('trigger-link').value = link; $('trigger-link-wrap').hidden = false;
   analytics.featureAction('trigger_presets', 'link_created', properties);
   try { await navigator.clipboard.writeText(link); analytics.featureAction('trigger_presets', 'link_copied', properties); $('trigger-share-status').textContent = 'Preset link copied. Opening it keeps trigger effects off.'; }
@@ -308,13 +312,13 @@ describeTriggerMode();
 try {
   const setup = AdaptiveTriggers.setup.read(location.href);
   if (setup) {
-    triggerMode.value = setup.mode;
     await triggers.setMode(setup.mode); await triggers.setTuning(setup); describeTriggerMode();
     analytics.featureAction('trigger_presets', 'loaded', presetProperties());
     $('trigger-share-status').textContent = 'Shared preset loaded. Enable trigger effects to try it.';
     document.querySelector('.trigger-custom').open = true;
+    triggerPopover.open();
   }
-} catch (error) { $('trigger-share-status').textContent = error.message; document.querySelector('.trigger-custom').open = true; }
+} catch (error) { $('trigger-share-status').textContent = error.message; document.querySelector('.trigger-custom').open = true; triggerPopover.open(); }
 $('trigger-mode').addEventListener('change', async event => {
   try { const pending = triggers.setMode(event.target.value); describeTriggerMode(); analytics.featureAction('trigger_presets', 'changed', presetProperties()); await pending; }
   catch (error) { triggerStatus.textContent = error.message; }
@@ -500,7 +504,7 @@ function releasePointer(event, cancelled = false) {
 canvas.addEventListener('pointerup', event=>releasePointer(event));
 canvas.addEventListener('pointercancel', event=>releasePointer(event,true));
 canvas.addEventListener('lostpointercapture', event=>releasePointer(event,true));
-canvas.addEventListener('pointerleave', () => { pendingHover = null; $('hover-label').textContent=''; });
+canvas.addEventListener('pointerleave', () => { pendingHover = null; if (view) view.hover = null; $('hover-label').textContent=''; });
 canvas.addEventListener('wheel', event => {
   if (!view?.ready || !event.altKey) return;
   event.preventDefault();
@@ -602,6 +606,7 @@ function addAccessibleControls(){
     if (pendingHover) {
       const { x, y } = pendingHover; pendingHover = null;
       const hit = view.hit(x, y);
+      view.hover = hit;
       const cursor = hit?.id && hit.id !== 'lights' && !hit.id.endsWith('-stick') ? 'pointer' : 'grab';
       if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
       const hint = hit?.id ? labels[hit.id] || hit.id.replace('-', ' ') : '';
@@ -632,7 +637,6 @@ range = new TargetPracticeView({
   onOpen: () => { releaseAll(); touchpad.setPaused(true); if (view) view.suspended = true; },
   onClose: () => { if (view) view.suspended = false; touchpad.setPaused(document.hidden || !document.hasFocus()); },
   onWeapon: mode => {
-    triggerMode.value = mode;
     const pending = triggers.setMode(mode); describeTriggerMode();
     void pending.catch(error => { triggerStatus.textContent = error.message; });
   },
@@ -678,7 +682,7 @@ $('open-diagnostics').addEventListener('click', () => diagnostics.open());
 function openRange() {
   const menu = $('open-range').closest('details');
   if (menu) { menu.open = false; menu.querySelector('summary').focus(); }
-  range.open(triggerMode.value);
+  range.open(triggers.mode);
 }
 $('open-range').addEventListener('click', openRange);
 // Other studio pages can link straight into target practice through Play.
@@ -693,7 +697,10 @@ openLinkedRange();
 discoverPad();
 void restoreControllerConnection();
 try{
-  view=new DualSenseView(canvas,input,{ pauseWhenOffscreen: true });
+  view=new DualSenseView(canvas,input,{
+    pauseWhenOffscreen: true,
+    idleMotion: () => inputCamera.enabled && inputCamera.view === 'front' && !pointers.size && !help.open && document.hasFocus() && !document.activeElement?.closest('#focus-controls'),
+  });
   await view.load(percent=>{$('load-progress').textContent=percent+'%';});
   view.setLightColor(appearance.input('light').value);
   view.setStickArrows(arrowControls.read());
