@@ -1,0 +1,97 @@
+/* Homepage refinements: keep the shared controller and other editions intact. */
+.controller-home .intro h1 { letter-spacing: -.035em; line-height: 1.12; }
+.controller-home .intro p { color: #a9adb8; }
+.connection-guidance {
+  margin: 16px 0 8px;
+  color: #bbc8dc;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.controller-home .stage { --viewer-height: clamp(380px, calc(100svh - 390px), 660px); }
+.controller-home .view-switch button {
+  min-width: 48px;
+  min-height: 44px;
+  color: #aab2c0;
+}
+.controller-home .view-switch button[aria-pressed=true] { color: var(--fg); background: #ffffff14; }
+.controller-home .trigger-launch { min-height: 44px; }
+.controller-home .sensor-button {
+  width: 64px;
+  height: 58px;
+  padding: 8px 4px;
+  gap: 4px;
+  align-content: center;
+  color: #abb9ca;
+}
+.sensor-label { font-size: 11px; line-height: 1.2; }
+.controller-home .stage-hint { color: #a5adbc; }
+.controller-home .swatches { gap: 2px; }
+.controller-home .swatch { display: grid; place-items: center; width: 44px; height: 44px; }
+.controller-home .swatch[aria-pressed=true] { border-color: transparent; }
+.controller-home .swatch[aria-pressed=true]::before { outline: 1px solid #b4bac7; outline-offset: 5px; }
+.controller-home .text-button { min-height: 44px; padding: 8px; border-radius: 7px; }
+.controller-home .text-button:hover { background: #ffffff08; }
+.controller-home .utilities { gap: 10px; }
+.controller-home .finish-label small { font-size: 11px; color: #9ba4b3; }
+.controller-home .telemetry { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.controller-home .readout:last-child { justify-content: flex-start; }
+.controller-home .readout-label { color: #a2abba; }
+.controller-home .readout-values { font-variant-numeric: tabular-nums; }
+.controller-home .readout-values b { color: #97a5ba; }
+.controller-home #controller-canvas:focus-visible { outline: 2px solid var(--blue); outline-offset: -6px; }
+.controller-home .icon-button { min-width: 44px; min-height: 44px; }
+.controller-home .help { scrollbar-color: #586478 #1a1c22; }
+.help-topics { margin-top: 24px; }
+.help-topics section + section { margin-top: 24px; }
+.help-topics h3 { margin: 0 0 8px; font-size: 15px; font-weight: 550; }
+.help-topics p { margin: 8px 0; line-height: 1.65; }
+.controller-home ::selection { color: var(--fg); background: #3559a0; }
+
+@media (min-width: 651px) and (max-width: 900px) {
+  .controller-home .viewer { margin-top: 60px; }
+}
+
+@media (max-width: 650px) {
+  .controller-home .intro h1 { font-size: clamp(28px, 7.8vw, 34px); }
+  .connection-guidance { margin: 14px 0 10px; max-width: 44ch; }
+  .controller-home .stage { margin: 0; min-height: 0; }
+  .controller-home .trigger-tool { top: 8px; left: 0; }
+  .controller-home .trigger-launch { padding: 8px 10px; font-size: 12px; }
+  .controller-home .view-switch { top: 8px; right: 0; }
+  .controller-home .view-switch button { padding: 7px; font-size: 12px; }
+  .controller-home .viewer {
+    flex: none;
+    margin-top: 66px;
+    height: 280px;
+    min-height: 280px;
+  }
+  .controller-home .sensor-dock {
+    position: relative;
+    inset: auto;
+    transform: none;
+    align-self: center;
+    margin: 0 0 12px;
+  }
+  .controller-home .sensor-notice { bottom: 112px; }
+  .controller-home .stage-hint { flex-wrap: wrap; gap: 4px 8px; font-size: 11px; padding: 0 4px 18px; }
+  .controller-home .workspace-bottom { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 12px 0; }
+  .controller-home .finishes { grid-column: 1 / -1; justify-content: space-between; }
+  .controller-home .finish-label { text-align: right; }
+  .controller-home .last-input { order: initial; min-width: 0; width: auto; padding: 0; font-size: 12px; }
+  .controller-home .utilities { gap: 2px; }
+  .controller-home .utilities .text-button span { display: inline; }
+  .controller-home .telemetry { gap: 16px 10px; padding: 20px 0; }
+  .controller-home .readout { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .controller-home .readout:nth-child(2) { border-right: 1px solid var(--line); }
+  .controller-home .readout-label { letter-spacing: .035em; font-size: 10px; }
+  .controller-home .readout-values { flex-wrap: wrap; gap: 3px 10px; font-size: 11px; }
+  .controller-home .trigger-meter { width: 35px; }
+}
+
+@media (max-width: 360px) {
+  .controller-home .view-switch button { min-width: 44px; padding-inline: 6px; }
+  .controller-home .trigger-launch { padding-inline: 8px; }
+  .controller-home .workspace-bottom { grid-template-columns: 1fr; }
+  .controller-home .utilities { justify-content: space-between; }
+  .controller-home .last-input { padding-block: 4px; }
+}

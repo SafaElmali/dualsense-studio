@@ -58,3 +58,29 @@ To verify in PostHog, open **Activity → Events**, filter event names by the pr
 
 ## Content blockers and startup
 
+
+## Jev Arena
+
+Jev uses the existing optional, cookieless PostHog client. Filter by the
+`controller_jev_arena_` prefix and `environment=production`.
+
+| Event suffix | Meaning and bounded properties |
+| --- | --- |
+| `opened` | Arena page opened; passive |
+| `load_requested`, `started`, `load_failed` | Game load requested and its result, with `game` and `player_mode`; results are passive |
+| `mode_changed`, `restarted`, `resumed` | User changes players, restarts, or resumes; `game`, `player_mode` |
+| `paused` | Running game paused; `game`, `player_mode`, `pause_reason=user`, `page_hidden`, `page_blur`, `closed`, `loading`, `completed`, or `error`; only user pauses count as engagement |
+| `completed` | Fighter match reaches its result; `game`, `player_mode`; passive |
+| `sound_changed` | Sound control changed; `game`, `player_mode`, `enabled` |
+| `connect_requested` | User clicks Connect Jev |
+| `connected`, `unavailable`, `connect_failed` | Pairing outcome, including automatic startup checks; passive |
+| `inference_started` | First accepted Jev decision after a load, resume, or mode change; `game`, `player_mode`; passive, not per request |
+| `request_failed` | Jev pauses because inference failed; `game`, `player_mode`, `error_kind=timeout`, `unauthorized`, `unavailable`, `rate_limit`, `invalid_response`, `stale_response`, or `request`; passive |
+
+`game` is `table-tennis` or `super-tilt-bro`. `player_mode` is `human`
+(you vs practice CPU), `practice` (watch practice CPUs), `local` (two humans),
+`human-jev` (you vs Jev), or `jev` (watch Jev vs Jev). No API keys, pairing tokens,
+ROM contents, game state, button streams, model answers, or raw errors are collected.
+Jev decisions and automatic outcomes never extend active time. Reporting failures
+cannot block game startup or controls. See PostHog's
+[custom event capture documentation](https://posthog.com/docs/libraries/js/usage).

@@ -2,6 +2,13 @@
 // Never sends raw input streams.
 export class ControllerAnalytics {
   static featureActions = {
+jev_arena: {
+      opened: [], load_requested: ['game', 'player_mode'], started: ['game', 'player_mode'], load_failed: ['game', 'player_mode'],
+      mode_changed: ['game', 'player_mode'], paused: ['game', 'player_mode', 'pause_reason'], resumed: ['game', 'player_mode'],
+      restarted: ['game', 'player_mode'], completed: ['game', 'player_mode'], sound_changed: ['game', 'player_mode', 'enabled'],
+      connect_requested: [], connected: [], unavailable: [], connect_failed: [],
+      inference_started: ['game', 'player_mode'], request_failed: ['game', 'player_mode', 'error_kind'],
+    },
 marble_maze: { opened: [], started: [], paused: [], resumed: [], restarted: [], completed: [], input_changed: [], connect_requested: [], centered: [] },
 help: { opened: ['surface', 'topic'] },
 navigation: { clicked: ['surface', 'destination', 'placement'] },
@@ -21,10 +28,14 @@ scorecard: { exported: ['score', 'hits', 'shots', 'weapons'], export_failed: [] 
 };
   // Background discoveries and asynchronous outcomes do not extend active time.
   // User-initiated connection attempts are counted by their requested events.
-  static passiveEvents = new Set(['controller_marble_maze_opened', 'controller_marble_maze_paused', 'controller_marble_maze_completed', 'controller_target_practice_rules_changed', 'controller_target_practice_controller_required', 'controller_target_practice_controller_connection_changed', 'controller_target_practice_ranking_unavailable', 'controller_target_practice_closed', 'controller_leaderboard_loaded', 'controller_leaderboard_load_failed', 'controller_leaderboard_submitted', 'controller_leaderboard_submit_failed', 'controller_touchpad_drawing_connect_succeeded', 'controller_touchpad_drawing_connect_cancelled', 'controller_touchpad_drawing_connect_failed', 'controller_touchpad_connect_cancelled', 'controller_touchpad_connect_failed', 'controller_gyro_connect_cancelled', 'controller_gyro_connect_failed', 'controller_gyro_recentered', 'controller_gyro_recenter_failed', 'controller_gyro_recenter_cancelled', 'controller_trigger_effects_enabled', 'controller_trigger_effects_connect_cancelled', 'controller_trigger_effects_connect_failed', 'controller_viewer_model_failed', 'controller_trigger_presets_loaded', 'controller_touchpad_reconnected', 'controller_touchpad_reconnect_failed', 'controller_battery_reading_available', 'controller_battery_connect_succeeded', 'controller_battery_connect_cancelled', 'controller_battery_connect_failed', 'controller_appearance_sync_enabled', 'controller_appearance_sync_cancelled', 'controller_appearance_sync_failed']);
+  static passiveEvents = new Set(['controller_jev_arena_opened', 'controller_jev_arena_started', 'controller_jev_arena_load_failed', 'controller_jev_arena_completed', 'controller_jev_arena_connected', 'controller_jev_arena_unavailable', 'controller_jev_arena_connect_failed', 'controller_jev_arena_inference_started', 'controller_jev_arena_request_failed', 'controller_marble_maze_opened', 'controller_marble_maze_paused', 'controller_marble_maze_completed', 'controller_target_practice_rules_changed', 'controller_target_practice_controller_required', 'controller_target_practice_controller_connection_changed', 'controller_target_practice_ranking_unavailable', 'controller_target_practice_closed', 'controller_leaderboard_loaded', 'controller_leaderboard_load_failed', 'controller_leaderboard_submitted', 'controller_leaderboard_submit_failed', 'controller_touchpad_drawing_connect_succeeded', 'controller_touchpad_drawing_connect_cancelled', 'controller_touchpad_drawing_connect_failed', 'controller_touchpad_connect_cancelled', 'controller_touchpad_connect_failed', 'controller_gyro_connect_cancelled', 'controller_gyro_connect_failed', 'controller_gyro_recentered', 'controller_gyro_recenter_failed', 'controller_gyro_recenter_cancelled', 'controller_trigger_effects_enabled', 'controller_trigger_effects_connect_cancelled', 'controller_trigger_effects_connect_failed', 'controller_viewer_model_failed', 'controller_trigger_presets_loaded', 'controller_touchpad_reconnected', 'controller_touchpad_reconnect_failed', 'controller_battery_reading_available', 'controller_battery_connect_succeeded', 'controller_battery_connect_cancelled', 'controller_battery_connect_failed', 'controller_appearance_sync_enabled', 'controller_appearance_sync_cancelled', 'controller_appearance_sync_failed']);
   static onceEvents = new Set(['controller_target_practice_gyro_used', 'controller_diagnostics_connected', 'controller_battery_reading_available', 'controller_touchpad_reconnected', 'controller_touchpad_reconnect_failed']);
 
   static propertyValues = {
+game: ['table-tennis', 'super-tilt-bro'],
+player_mode: ['human', 'practice', 'local', 'human-jev', 'jev'],
+pause_reason: ['user', 'page_hidden', 'page_blur', 'closed', 'loading', 'completed', 'error'],
+error_kind: ['timeout', 'unauthorized', 'unavailable', 'rate_limit', 'invalid_response', 'stale_response', 'request'],
 board: ['current', 'previous', 'original'],
 topic: ["connection","stick_drift","device_access","virtual_controller","compatibility","independence","pricing","stick_arrows"],
 destination: ['studio', 'streamer', 'obs_setup', 'x', 'github'],
@@ -95,7 +106,8 @@ reason: ['user', 'completed', 'live_input', 'page_hidden', 'page_blur', 'disconn
     if (Number.isFinite(payload.hits) && Number.isFinite(payload.shots)) payload.accuracy = payload.shots ? Math.round(payload.hits / payload.shots * 100) : 0;
     const event = `controller_${feature}_${action}`;
     const automaticStop = feature === 'target_practice' && action === 'paused';
-    if (!ControllerAnalytics.passiveEvents.has(event) && !(automaticStop && payload.reason !== 'user')) this.interact(feature);
+    const automaticJevPause = feature === 'jev_arena' && action === 'paused' && payload.pause_reason !== 'user';
+    if (!ControllerAnalytics.passiveEvents.has(event) && !automaticJevPause && !(automaticStop && payload.reason !== 'user')) this.interact(feature);
     if ((feature === 'touchpad_drawing' && action === 'started') || (feature === 'touchpad' && action === 'tracking_started')) this.once(event, payload, event + ':' + payload.input_source);
     else if (feature === 'touchpad' && action === 'highlighted') this.once(event, payload, event + ':' + payload.source);
     else if (ControllerAnalytics.onceEvents.has(event)) this.once(event, payload);

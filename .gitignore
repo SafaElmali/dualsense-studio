@@ -6,3 +6,5 @@ node_modules/
 coverage/
 dist/
 .netlify/
+__pycache__/
+.venv/

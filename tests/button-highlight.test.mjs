@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Color } from '../controller/vendor/three/three.core.min.js';
+import { Color, Mesh, MeshPhysicalMaterial } from '../controller/vendor/three/three.core.min.js';
+import { ShaderLib } from '../controller/vendor/three/three.module.min.js';
 import { ButtonHighlight } from '../controller/button-highlight.js';
 
 const mesh = (color = '#e9eaf0') => ({
@@ -74,4 +75,44 @@ test('invalid customization is ignored and opacity stays in the supported range'
   sameColor(highlight.color, new Color('#ff0000')); assert.equal(highlight.opacity, 35);
   highlight.set({ opacity: -50 }); assert.equal(highlight.opacity, 0);
   highlight.set({ opacity: 200 }); assert.equal(highlight.opacity, 100);
+});
+
+test('solid feedback follows opacity and live colors without changing the resting physical finish', () => {
+  const highlight = new ButtonHighlight(new Color());
+  const button = new Mesh(undefined, new MeshPhysicalMaterial({ color: '#d0d4de', roughness: .23, clearcoat: .8 }));
+  highlight.prepare(button, { solid: true });
+  const shader = { uniforms: {}, fragmentShader: ShaderLib.physical.fragmentShader };
+  button.material.onBeforeCompile(shader);
+  const amount = shader.uniforms.buttonHighlightAmount, color = shader.uniforms.buttonHighlightColor;
+  for (const opacity of [100, 50, 0]) {
+    highlight.set({ opacity, color: '#0046ff' });
+    highlight.apply(button, 1);
+    assert.equal(amount.value, opacity / 100);
+    sameColor(color.value, new Color('#0046ff'));
+  }
+  highlight.set({ opacity: 100, color: '#ffbf47' });
+  highlight.apply(button, 1);
+  sameColor(color.value, new Color('#ffbf47'));
+  highlight.apply(button, 0);
+  assert.equal(amount.value, 0);
+  sameColor(button.material.color, new Color('#d0d4de'));
+  assert.equal(button.material.roughness, .23);
+  assert.equal(button.material.clearcoat, .8);
+  assert.equal(button.material.transparent, false);
+  assert.equal(button.material.depthTest, true, 'Hidden buttons stay occluded by the controller');
+});
+
+test('solid symbols track surface contrast, and disabling feedback still preserves mute state', () => {
+  const highlight = new ButtonHighlight(new Color()), symbol = new Mesh(undefined, new MeshPhysicalMaterial());
+  highlight.prepare(symbol, { solid: true });
+  const uniforms = symbol.material.userData.highlightUniforms;
+  for (const [surface, ink] of [['#ffbf47', '#152033'], ['#000080', '#ffffff']]) {
+    highlight.apply(symbol, 1, { symbol: true, surfaceColor: new Color(surface) });
+    sameColor(uniforms.buttonHighlightColor.value, new Color(ink));
+  }
+  highlight.set({ opacity: 0 });
+  highlight.apply(symbol, 1, { muted: true });
+  assert.equal(uniforms.buttonHighlightAmount.value, 0);
+  sameColor(symbol.material.emissive, new Color('#dc6615'));
+  assert.equal(symbol.material.emissiveIntensity, .7);
 });

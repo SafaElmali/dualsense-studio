@@ -42,6 +42,7 @@
   "controller/marble-maze-session.js",
   "controller/marble-maze.js",
   "controller/page-analytics.js",
+  "controller/playground-polish.css",
   "controller/playground.css",
   "controller/range-renderer.js",
   "controller/range-rules.js",

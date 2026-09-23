@@ -19,7 +19,8 @@ test('every named feature event in the app is accepted by the analytics filter',
       checked++;
     }
     const trackedFeature = {
-'marble-maze-app.js': 'marble_maze'
+'marble-maze-app.js': 'marble_maze',
+'jev-arena-app.js': 'jev_arena'
 }[file];
     if (trackedFeature) for (const [, action] of source.matchAll(/\btrack\('([a-z_]+)'/g)) {
       assert.ok(Object.hasOwn(ControllerAnalytics.featureActions[trackedFeature], action), `${trackedFeature}.${action} is silently dropped`);
@@ -106,3 +107,23 @@ test('all static FAQ topics and navigation tags are accepted by the event contra
 
 
 
+
+test('Jev event properties are bounded and discard credentials, state, and raw errors', () => {
+  const events = [], analytics = new ControllerAnalytics((name, properties) => events.push({ name, ...properties }));
+  analytics.featureAction('jev_arena', 'request_failed', { game: 'super-tilt-bro', player_mode: 'human-jev', error_kind: 'timeout', api_key: 'secret', token: 'secret', state: { players: [] }, error: 'private response' });
+  assert.deepEqual(events, [{ name: 'controller_jev_arena_request_failed', game: 'super-tilt-bro', player_mode: 'human-jev', error_kind: 'timeout' }]);
+  analytics.featureAction('jev_arena', 'request_failed', { game: 'private ROM', player_mode: 'private', error_kind: 'private error' });
+  assert.deepEqual(events.at(-1), { name: 'controller_jev_arena_request_failed' });
+});
+
+test('automatic Jev lifecycle events do not fabricate engagement or extend active time', () => {
+  let now = 0;
+  const events = [], analytics = new ControllerAnalytics((name, properties) => events.push({ name, ...properties }), () => now);
+  for (const action of ['opened', 'started', 'load_failed', 'completed', 'connected', 'unavailable', 'connect_failed', 'inference_started', 'request_failed']) analytics.featureAction('jev_arena', action);
+  analytics.featureAction('jev_arena', 'paused', { pause_reason: 'page_blur' });
+  assert.ok(!events.some(event => event.name === 'controller_interacted'));
+  analytics.featureAction('jev_arena', 'load_requested', { game: 'table-tennis', player_mode: 'human-jev' });
+  assert.equal(events.filter(event => event.name === 'controller_feature_used').length, 1);
+  now = 60000; analytics.featureAction('jev_arena', 'inference_started'); analytics.flush();
+  assert.equal(events.find(event => event.name === 'controller_active_time').seconds, 5);
+});

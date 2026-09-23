@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import * as module from 'node:module';
 import { resolve } from './helpers/three-loader.mjs';
 import * as THREE from '../controller/vendor/three/three.module.min.js';
+import { ControllerInput } from '../controller/input-state.js';
+import { ButtonHighlight } from '../controller/button-highlight.js';
 
 if (module.registerHooks) module.registerHooks({ resolve });
 else module.register('./helpers/three-loader.mjs', import.meta.url);
@@ -108,4 +110,39 @@ test('size notifications only resize the drawing buffer when dimensions change',
   bounds.width = 600; view.resize(); view.resize(); assert.equal(resizes, 1);
   assert.equal(view.camera.aspect, 1.5);
   bounds.height = 0; view.resize(); assert.equal(resizes, 1);
+});
+
+test('a one-frame button tap paints full feedback immediately, then fades without holding the input', t => {
+  const previousDocument = globalThis.document, previousFrame = globalThis.requestAnimationFrame;
+  globalThis.document = { hidden: false }; globalThis.requestAnimationFrame = () => 1;
+  t.after(() => { globalThis.document = previousDocument; globalThis.requestAnimationFrame = previousFrame; });
+  for (const fps of [30, 60, 144]) for (const reducedMotion of [false, true]) {
+    const input = new ControllerInput(), highlight = new ButtonHighlight(new THREE.Color()), controls = new Map();
+    for (const id of ['cross', 'square', 'circle', 'triangle', 'up', 'down', 'left', 'right', 'l1', 'r1', 'create', 'options', 'ps', 'mute', 'touchpad', 'l2', 'r2', 'left-stick', 'right-stick']) {
+      const group = new THREE.Group(), cap = new THREE.Mesh(undefined, new THREE.MeshPhysicalMaterial());
+      group.userData.rest = new THREE.Vector3(); group.add(cap); controls.set(id, group);
+      highlight.prepare(cap, { solid: !id.endsWith('-stick') && id !== 'l2' && id !== 'r2' });
+    }
+    const view = Object.assign(Object.create(DualSenseView.prototype), {
+      input, highlight, controls, touchSources: new Map(),
+      previousTime: 100, reducedMotion: { matches: reducedMotion },
+      pose: { x: 0, y: 0, z: 0 }, model: new THREE.Group(), lightMaterials: [],
+      renderTouches() {}, renderer: { render() {} },
+    });
+    for (const id of controls.keys()) input.setButton(id === 'left-stick' ? 'l3' : id === 'right-stick' ? 'r3' : id, 'gamepad', 1);
+    view.animate(100 + 1000 / fps);
+    for (const group of controls.values()) {
+      assert.equal(group.userData.glow, 1, `${fps} fps: a short press must reach full strength`);
+      for (const channel of ['r', 'g', 'b']) assert.ok(Math.abs(group.children[0].material.color[channel] - highlight.color[channel]) < 1e-10);
+    }
+    input.releaseSource('gamepad');
+    view.animate(100 + 2000 / fps);
+    assert.equal(input.buttons.size, 0, 'The visual fade must not extend the actual press');
+    for (const group of controls.values()) {
+      if (reducedMotion) assert.equal(group.userData.glow, 0);
+      else assert.ok(group.userData.glow > 0 && group.userData.glow < 1);
+    }
+    for (let frame = 3; frame <= fps; frame++) view.animate(100 + frame * 1000 / fps);
+    for (const group of controls.values()) assert.ok(group.userData.glow < .001);
+  }
 });

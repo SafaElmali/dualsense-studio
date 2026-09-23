@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
-import { ButtonHighlight } from './button-highlight.js?v=stick-feedback-1';
+import { ButtonHighlight } from './button-highlight.js?v=button-visibility-1';
 import { MeshBVH, acceleratedRaycast } from './vendor/three-mesh-bvh/index.module.min.js';
 
 export class DualSenseView {
@@ -150,11 +150,9 @@ export class DualSenseView {
     const missing = required.filter(id => !this.controls.has(id));
     if (missing.length) throw new Error('Controller model is missing parts: ' + missing.join(', '));
     for (const id of ['triangle','circle','cross','square','up','down','left','right']) this.addSymbol(id);
-    for (const group of this.controls.values()) {
+    for (const [id, group] of this.controls) {
       for (const child of group.children) {
-        child.userData.restEmissive = child.material.emissive.clone();
-        child.userData.restEmissiveIntensity = child.material.emissiveIntensity;
-        child.material.userData.restColor = child.material.color.clone();
+        this.highlight.prepare(child, { solid: !id.endsWith('-stick') && id !== 'l2' && id !== 'r2' });
       }
     }
     for (const side of ['left', 'right']) this.addStickArrow(side);
@@ -188,7 +186,7 @@ export class DualSenseView {
     if (!cap) return;
     const canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#ffffff'; ctx.fillStyle = '#ffffff'; ctx.lineWidth = 10; ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#ffffff'; ctx.fillStyle = '#ffffff'; ctx.lineWidth = 20; ctx.lineJoin = 'round';
     ctx.beginPath();
     if (id === 'triangle') { ctx.moveTo(128,35); ctx.lineTo(230,213); ctx.lineTo(26,213); ctx.closePath(); ctx.stroke(); }
     if (id === 'circle') { ctx.arc(128,128,92,0,Math.PI*2); ctx.stroke(); }
@@ -484,7 +482,9 @@ export class DualSenseView {
       const buttonId = id === 'left-stick' ? 'l3' : id === 'right-stick' ? 'r3' : id;
       const preview = time < this.highlightPreviewUntil && ['cross', 'touchpad', 'r2'].includes(id);
       const pressed = stickMoving || arrowPreview || preview || this.input.button(buttonId) > .05 || (id === 'touchpad' && (this.touchSources.size > 0 || time < this.touchpadHighlightUntil));
-      group.userData.glow = THREE.MathUtils.lerp(group.userData.glow || 0, pressed ? 1 : 0, blend);
+      // Quick taps need full feedback on their first rendered frame; only the
+      // release fades. Physical button travel keeps its independent smoothing.
+      group.userData.glow = pressed ? 1 : THREE.MathUtils.lerp(group.userData.glow || 0, 0, blend);
       for (const child of group.children) {
         if (!child.userData.restEmissive) continue;
         this.highlight.apply(child, group.userData.glow, {
