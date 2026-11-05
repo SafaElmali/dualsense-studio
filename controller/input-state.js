@@ -37,7 +37,7 @@ export class ControllerInput {
 
   axis(side) {
     const stick = this.sticks[side];
-    for (const source of ['pointer', 'keyboard', 'gamepad']) {
+    for (const source of ['remote', 'pointer', 'keyboard', 'gamepad']) {
       if (stick.has(source)) return { ...stick.get(source) };
     }
     return { x: 0, y: 0 };

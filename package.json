@@ -7,12 +7,17 @@
   "scripts": {
     "test": "npm run build && node --test tests/*.test.mjs",
     "build": "node scripts/build.mjs",
-    "test:seo": "npm run build && node --test tests/seo.test.mjs"
+    "test:seo": "npm run build && node --test tests/seo.test.mjs",
+    "overlay": "node overlay/start.mjs",
+    "overlay:demo": "node overlay/demo.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "@netlify/blobs": "^11.0.3"
+  },
+  "devDependencies": {
+    "ws": "^8.22.1"
   }
 }
